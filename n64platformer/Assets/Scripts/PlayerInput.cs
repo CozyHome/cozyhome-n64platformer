@@ -22,4 +22,7 @@ public class PlayerInput : MonoBehaviour
         RawMouse[0] = Input.GetAxisRaw(MouseX);
         RawMouse[1] = Input.GetAxisRaw(MouseY);
     }
+
+    public Vector2 GetRawMove => RawMove;
+    public Vector2 GetRawMouse => RawMouse;
 }
