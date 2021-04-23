@@ -8,6 +8,7 @@ public class GroundState : State
     [SerializeField] private Transform CameraView;
     [SerializeField] private Transform ModelView;
     [SerializeField] private Animator Animator;
+    [SerializeField] private PlayerInput PlayerInput;
 
 
     // values
@@ -17,14 +18,11 @@ public class GroundState : State
 
 
     // initialized references
-    private PlayerInput PlayerInput;
     private ActorHeader.Actor PlayerActor;
 
     protected override void OnStateInitialize()
     {
         PlayerActor = GetComponent<ActorHeader.Actor>();
-        PlayerInput = GetComponent<PlayerInput>();
-
         machine.SetCurrentState(this.Key);
     }
 
@@ -54,7 +52,7 @@ public class GroundState : State
             ModelView.rotation = Quaternion.RotateTowards(
                 ModelView.rotation,
                 Quaternion.LookRotation(Move, Vector3.up),
-                480F * fdt);   
+                960F * fdt);   
             
             Speed += AccelerationCurve.Evaluate(Speed / MaxMoveSpeed) * fdt * MaxMoveSpeed;
             Speed = Mathf.Min(Speed, MaxMoveSpeed);
@@ -66,6 +64,10 @@ public class GroundState : State
         }
 
         Velocity = ModelView.rotation * new Vector3(0, 0, 1F);
+        
+        if(PlayerActor.Ground.stable)
+            Velocity = VectorHeader.CrossProjection(Velocity, Vector3.up, PlayerActor.Ground.normal);
+
         PlayerActor.SetVelocity(Velocity * Speed);
 
         Animator.SetFloat("Speed", Speed / MaxMoveSpeed);

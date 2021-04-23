@@ -808,11 +808,11 @@ namespace com.cozyhome.Actors
                     if (stability) // if stable, just orient and maintain magnitude
                     {
                         // anyways just clip along the newly discovered stable plane
+                        // preserve magnitude
                         VectorHeader.ClipVector(ref velocity, plane);
-
+                        
                         // im indifferent to whether I should clip or orient at this stage, but for now
                         // we'll stick to clipping
-
                     }
                     else
                     {
