@@ -225,11 +225,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 864958331}
-  - component: {fileID: 864958332}
-  - component: {fileID: 864958333}
   - component: {fileID: 864958334}
   - component: {fileID: 864958336}
   - component: {fileID: 864958335}
+  - component: {fileID: 864958333}
+  - component: {fileID: 864958332}
   m_Layer: 0
   m_Name: PlayerActor
   m_TagString: Untagged
@@ -252,20 +252,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
---- !u!65 &864958332
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 864958330}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1.5, y: 4, z: 1.5}
-  m_Center: {x: 0, y: 2, z: 0}
---- !u!114 &864958333
+--- !u!114 &864958332
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -274,19 +261,33 @@ MonoBehaviour:
   m_GameObject: {fileID: 864958330}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a5d3f0cb65c4fc4887c2651162a409c, type: 3}
+  m_Script: {fileID: 11500000, guid: 13f2c60eb4a4cd248a2be897fa65cc27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   MoveType: 2
-  SnapType: 1
+  SnapType: 2
   SnapEnabled: 1
   StepEnabled: 1
-  StepHeight: 0.25
+  StepHeight: 0.5
   InitializeOnStart: 1
   MaximumStableSlideAngle: 65
   _filter:
     serializedVersion: 2
     m_Bits: 1
+--- !u!136 &864958333
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 864958330}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.75
+  m_Height: 4
+  m_Direction: 1
+  m_Center: {x: 0, y: 2, z: 0}
 --- !u!114 &864958334
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -321,6 +322,55 @@ MonoBehaviour:
   CameraView: {fileID: 963194228}
   ModelView: {fileID: 895036036}
   Animator: {fileID: 1005939958}
+  AccelerationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1.5
+      inSlope: -0.5
+      outSlope: -0.5
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: -0.5
+      outSlope: -0.5
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  DeaccelerationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1.5
+      inSlope: 0.5
+      outSlope: 0.5
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 2
+      inSlope: 0.5
+      outSlope: 0.5
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  MaxMoveSpeed: 16
 --- !u!114 &864958336
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -492,7 +542,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: 0.2588186, y: -0, z: -0, w: 0.965926}
-  m_LocalPosition: {x: -10.25, y: 32.644062, z: -11.032872}
+  m_LocalPosition: {x: -10.25, y: 46.644062, z: -20.032871}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
