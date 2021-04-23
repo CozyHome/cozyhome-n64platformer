@@ -6,6 +6,7 @@ public class GroundState : State
 {
     [SerializeField] private Transform CameraView;
     [SerializeField] private Transform ModelView;
+    [SerializeField] private Animator Animator;
 
     private PlayerInput PlayerInput;
     private ActorHeader.Actor PlayerActor;
@@ -45,6 +46,8 @@ public class GroundState : State
                 480F * fdt);
 
         PlayerActor.SetVelocity(Move);
+
+        Animator.SetFloat("Speed", PlayerActor._velocity.magnitude / 8F);
     }
 
     public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)
