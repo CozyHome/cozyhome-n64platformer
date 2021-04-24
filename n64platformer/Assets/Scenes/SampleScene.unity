@@ -166,12 +166,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d06a36e5592366a4db4041f67ec99ec1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  JoystickX: Horizontal
-  JoystickY: Vertical
-  MouseX: Mouse X
-  MouseY: Mouse Y
+  JoystickX: LJoystickX
+  JoystickY: LJoystickY
+  MouseX: RJoystickX
+  MouseY: RJoystickY
+  XButton: Fire2
   RawMove: {x: 0, y: 0}
   RawMouse: {x: 0, y: 0}
+  RawXButton: 0
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -277,6 +279,7 @@ GameObject:
   - component: {fileID: 864958336}
   - component: {fileID: 864958335}
   - component: {fileID: 864958334}
+  - component: {fileID: 864958337}
   - component: {fileID: 864958333}
   - component: {fileID: 864958332}
   m_Layer: 0
@@ -350,8 +353,57 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Key: Jump
+  PlayerInput: {fileID: 45771647}
   JumpHeight: 4
   Animator: {fileID: 1005939958}
+  FallTimeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: -1.5
+      value: 1.0041351
+      inSlope: -0.03918948
+      outSlope: -0.03918948
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.1033165
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0.032967087
+      outSlope: 0.032967087
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.09342422
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  GravityCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: -0.95623666
+      outSlope: -0.95623666
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.039582774
+    - serializedVersion: 3
+      time: 1
+      value: 0.7000122
+      inSlope: 0.0014334263
+      outSlope: 0.0014334263
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.066946924
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!114 &864958335
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -369,6 +421,30 @@ MonoBehaviour:
   ModelView: {fileID: 895036036}
   Animator: {fileID: 1005939958}
   PlayerInput: {fileID: 45771647}
+  RunRotationalCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: -0.0013377925
+      outSlope: -0.0013377925
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.11370303
+    - serializedVersion: 3
+      time: 1
+      value: 0.5
+      inSlope: 0.018021796
+      outSlope: 0.018021796
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.09973192
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   AnimatorSpeedCurve:
     serializedVersion: 2
     m_Curve:
@@ -441,8 +517,10 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  MaxRotateSpeed: 960
   MaxMoveSpeed: 20
-  LastVelocity: {x: 0, y: 0, z: 0}
+  MoveAcceleration: 30
+  WalkAcceleration: 10
 --- !u!114 &864958336
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -455,6 +533,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3be8ae9b404d2d24dacf8b0c417aefad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &864958337
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 864958330}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa7499bf972deca42be81e7ba46d1aaa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Key: Fall
+  Animator: {fileID: 1005939958}
 --- !u!1001 &895036035
 PrefabInstance:
   m_ObjectHideFlags: 0
