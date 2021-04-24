@@ -37,7 +37,6 @@ public class CameraMachine : MonoBehaviour
             ) * ViewTransform.rotation;
         }
 
-
         ViewTransform.position = WorldOffset + OrbitTransform.position - ViewTransform.forward * DolleyDistance;
     }
 }

@@ -810,7 +810,7 @@ namespace com.cozyhome.Actors
                         // anyways just clip along the newly discovered stable plane
                         // preserve magnitude
                         VectorHeader.ClipVector(ref velocity, plane);
-                        
+
                         // im indifferent to whether I should clip or orient at this stage, but for now
                         // we'll stick to clipping
                     }
@@ -916,7 +916,7 @@ namespace com.cozyhome.Actors
             */
 
             /* feel free to change these values, I think they're pretty decent atm */
-            float gtracelen = (lastground.stable && lastground.snapped) ? 0.075F : 0.05F;
+            float gtracelen = (lastground.stable && lastground.snapped) ? 0.2F : 0.05F;
 
             while (numgroundbumps++ < MAX_GROUNDBUMPS &&
                 gtracelen > 0F)
