@@ -11,16 +11,26 @@ public class CameraMachine : MonoBehaviour
     [SerializeField] private Transform ViewTransform;
     [SerializeField] private Transform OrbitTransform;
     [SerializeField] private ActorEventRegistry ActorEventRegistry;
-    
+
     [Header("Target Values")]
     [SerializeField] private float DolleyDistance;
     [SerializeField] private float MaxVerticalAngle = 150F;
-    
+
+    /* Events */
+    [Header("Event Subsystem References")]
+    [SerializeField] private MainMiddleman Middleman;
+    private ExecutionChain<int, MainMiddleman> MainChain;
+
+    [SerializeField] private ExecutionHeader.OnJumpExecution JumpExecution;
+
     public float VerticalOffset = 4F;
 
     void Start()
     {
         FSM = new MonoFSM<string, CameraState>();
+        MainChain = new ExecutionChain<int, MainMiddleman>(Middleman);
+
+        AssignExecutions();
 
         CameraState[] tmpbuffer = GetComponents<CameraState>();
         for (int i = 0; i < tmpbuffer.Length; i++)
@@ -30,7 +40,12 @@ public class CameraMachine : MonoBehaviour
 
     void FixedUpdate()
     {
-        FSM.Current.FixedTick(Time.fixedDeltaTime);
+        float fdt = Time.fixedDeltaTime;
+
+        FSM.Current.FixedTick(fdt);
+        
+        Middleman.SetFixedDeltaTime(fdt);
+        MainChain.FixedTick();
     }
 
     void Update()
@@ -62,11 +77,18 @@ public class CameraMachine : MonoBehaviour
         ) * ViewTransform.rotation;
     }
 
+    public void ApplyOrbitPosition(Vector3 offset)
+    {
+        ViewTransform.position =
+            OrbitTransform.position - 
+            (ViewTransform.forward * DolleyDistance) + (Vector3.up * VerticalOffset) + offset;
+    }
+
     public void ApplyOrbitPosition()
     {
         ViewTransform.position =
-            OrbitTransform.position - ViewTransform.forward * DolleyDistance +
-            Vector3.up * VerticalOffset;
+            OrbitTransform.position - 
+            (ViewTransform.forward * DolleyDistance) + (Vector3.up * VerticalOffset);
     }
 
     public void SetViewRotation(Quaternion newrotation)
@@ -74,19 +96,29 @@ public class CameraMachine : MonoBehaviour
         ViewTransform.rotation = newrotation;
     }
 
-    public void ComputeRealignments(ref Quaternion Initial, ref Quaternion Final) 
+    public void ComputeRealignments(ref Quaternion Initial, ref Quaternion Final)
     {
         Initial = ViewTransform.rotation;
-        
+
         Vector3 planarforward = ViewTransform.forward;
         planarforward[1] = 0F;
         planarforward.Normalize();
 
-        float YAngle = Vector3.SignedAngle(planarforward, 
-            OrbitTransform.forward, 
+        float YAngle = Vector3.SignedAngle(planarforward,
+            OrbitTransform.forward,
             Vector3.up);
 
         Final = Quaternion.AngleAxis(YAngle, Vector3.up) * Initial;
+    }
+
+    private void AssignExecutions()
+    {
+        Middleman.SetMachine(this);
+
+        GetEventRegistry.Event_ActorJumped += delegate
+        {
+            MainChain.AddExecution(JumpExecution);
+        };
     }
 }
 
@@ -114,4 +146,17 @@ public abstract class CameraState : MonoBehaviour, MonoFSM<string, CameraState>.
     public abstract void FixedTick(float fdt);
 
     public string GetKey => Key;
+}
+
+[System.Serializable]
+public class MainMiddleman
+{
+    public void SetMachine(CameraMachine machine) => this.machine = machine;
+    public void SetFixedDeltaTime(float fdt) => this.fdt = fdt;
+    private CameraMachine machine;
+    private float fdt;
+
+
+    public CameraMachine Machine => machine;
+    public float FDT => fdt;
 }

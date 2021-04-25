@@ -15,19 +15,8 @@ public class ManualOrbitState : CameraState
     [SerializeField] private PlayerInput PlayerInput;
     [SerializeField] private float MaxOrbitSpeed = 240F;
 
-    /* callbacks */
-    [SerializeField] private OnJumpExecution JumpExecution;
-    [SerializeField] private Middleman middleman;
-    private ExecutionChain<int, Middleman> Chain;
-
     protected override void OnStateInitialize()
     {
-        Chain = new ExecutionChain<int, Middleman>(middleman);
-
-        machine.GetEventRegistry.Event_ActorJumped += delegate
-        {
-            Chain.AddExecution(JumpExecution);
-        };
 
     }
 
@@ -70,10 +59,6 @@ public class ManualOrbitState : CameraState
 
         machine.OrbitAroundTarget(Mouse * rate);
         machine.ApplyOrbitPosition();
-
-        middleman.fdt = fdt;
-
-        Chain.Tick();
     }
 
     public override void Tick(float dt)
@@ -81,36 +66,4 @@ public class ManualOrbitState : CameraState
 
     }
 
-
-    [System.Serializable]
-    public class OnJumpExecution : ExecutionChain<int, Middleman>.Execution
-    {
-        [SerializeField] private AnimationCurve JumpCurve;
-        [SerializeField] private float MaxJumpTime;
-        private float JumpTime;
-
-        public override void Enter(Middleman middleman) { JumpTime = 0F; }
-
-        public override void Exit(Middleman middleman) { JumpTime = 0F; }
-
-        public override bool Execute(Middleman middleman)
-        {
-            if (JumpTime >= MaxJumpTime)
-                return false;
-            else
-            {
-                middleman.machine.VerticalOffset = JumpCurve.Evaluate(JumpTime / MaxJumpTime);
-
-                JumpTime += middleman.fdt;
-                return true;
-            }
-        }
-    }
-
-    [System.Serializable]
-    public class Middleman
-    {
-        public float fdt;
-        public CameraMachine machine;
-    }
 }

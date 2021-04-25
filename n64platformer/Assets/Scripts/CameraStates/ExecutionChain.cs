@@ -29,7 +29,7 @@ public class ExecutionChain<T1, T2>
         }
     }
 
-    public void Tick()
+    public void FixedTick()
     {
         for (int i = 0; i < Executions.Count; i++)
         {

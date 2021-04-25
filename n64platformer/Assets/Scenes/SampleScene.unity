@@ -747,6 +747,43 @@ MonoBehaviour:
   ActorEventRegistry: {fileID: 864958338}
   DolleyDistance: 12
   MaxVerticalAngle: 150
+  JumpExecution:
+    key: 0
+    JumpCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: -0.024909284
+        outSlope: -0.024909284
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0.17574257
+      - serializedVersion: 3
+        time: 0.4987654
+        value: 1
+        inSlope: -0.01189073
+        outSlope: -0.01189073
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.7966201
+        outWeight: 0.79942566
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: 0.037628867
+        outSlope: 0.037628867
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.11576369
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 0
+      m_RotationOrder: 4
+    MaxJumpTime: 1
+    BounceHeight: 1
   VerticalOffset: 4
 --- !u!114 &963194230
 MonoBehaviour:
@@ -788,45 +825,6 @@ MonoBehaviour:
   MaxEaseTime: 0.5
   PlayerInput: {fileID: 45771647}
   MaxOrbitSpeed: 240
-  JumpExecution:
-    key: 0
-    JumpCurve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 4.027896
-        inSlope: -0.024909284
-        outSlope: -0.024909284
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0.17574257
-      - serializedVersion: 3
-        time: 0.5
-        value: 5.027896
-        inSlope: -0.01189073
-        outSlope: -0.01189073
-        tangentMode: 0
-        weightedMode: 3
-        inWeight: 0.7966201
-        outWeight: 0.79942566
-      - serializedVersion: 3
-        time: 1
-        value: 4.027896
-        inSlope: 0.037628867
-        outSlope: 0.037628867
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.11576369
-        outWeight: 0
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    MaxJumpTime: 1
-  middleman:
-    fdt: 0
-    machine: {fileID: 963194229}
 --- !u!114 &963194231
 MonoBehaviour:
   m_ObjectHideFlags: 0
