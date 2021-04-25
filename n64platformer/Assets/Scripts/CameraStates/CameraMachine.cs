@@ -10,11 +10,13 @@ public class CameraMachine : MonoBehaviour
     [Header("Target References")]
     [SerializeField] private Transform ViewTransform;
     [SerializeField] private Transform OrbitTransform;
+    [SerializeField] private ActorEventRegistry ActorEventRegistry;
     
     [Header("Target Values")]
     [SerializeField] private float DolleyDistance;
     [SerializeField] private float MaxVerticalAngle = 150F;
-    [SerializeField] private Vector3 WorldOffset = new Vector3(0, 4, 0);
+    
+    public float VerticalOffset = 4F;
 
     void Start()
     {
@@ -37,7 +39,7 @@ public class CameraMachine : MonoBehaviour
     }
 
     public MonoFSM<string, CameraState> GetFSM => FSM;
-
+    public ActorEventRegistry GetEventRegistry => ActorEventRegistry;
 
     public void OrbitAroundTarget(Vector2 Input)
     {
@@ -64,15 +66,13 @@ public class CameraMachine : MonoBehaviour
     {
         ViewTransform.position =
             OrbitTransform.position - ViewTransform.forward * DolleyDistance +
-            WorldOffset;
+            Vector3.up * VerticalOffset;
     }
 
-    
     public void SetViewRotation(Quaternion newrotation)
     {
         ViewTransform.rotation = newrotation;
     }
-
 
     public void ComputeRealignments(ref Quaternion Initial, ref Quaternion Final) 
     {

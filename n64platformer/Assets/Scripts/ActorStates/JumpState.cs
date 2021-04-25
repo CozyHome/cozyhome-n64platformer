@@ -41,6 +41,10 @@ public class JumpState : ActorState
         HoldingJump = true;
 
         Animator.SetTrigger("Jump");
+
+        /* notify our callback system */
+        
+        machine.GetEventRegistry.Event_ActorJumped?.Invoke();
     }
 
     public override void Exit(ActorState next)

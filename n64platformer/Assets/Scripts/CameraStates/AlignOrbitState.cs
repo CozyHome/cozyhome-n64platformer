@@ -10,10 +10,16 @@ public class AlignOrbitState : CameraState
     private Quaternion Initial, Final;
 
     private float TurnTime;
+    
+    protected override void OnStateInitialize()
+    {
+
+    }
 
     public override void Enter(CameraState prev)
     {
         machine.ComputeRealignments(ref Initial, ref Final);
+
     }
 
     public override void Exit(CameraState next)
@@ -50,9 +56,4 @@ public class AlignOrbitState : CameraState
     {
 
     }
-
-    protected override void OnStateInitialize()
-    {
-    }
-
 }

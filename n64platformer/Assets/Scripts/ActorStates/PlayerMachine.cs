@@ -9,10 +9,12 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
 {
     private ActorHeader.Actor PlayerActor;
     private MonoFSM<string, ActorState> FSM;
+    private ActorEventRegistry EventRegistry;
     void Start()
     {
         FSM = new MonoFSM<string, ActorState>();
 
+        EventRegistry = GetComponent<ActorEventRegistry>();
         PlayerActor = GetComponent<ActorHeader.Actor>();
         ActorState[] tmpbuffer = gameObject.GetComponents<ActorState>();
 
@@ -42,6 +44,7 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
     }
 
     public MonoFSM<string, ActorState> GetFSM => FSM;
+    public ActorEventRegistry GetEventRegistry => EventRegistry;
 }
 
 public abstract class ActorState : MonoBehaviour, ActorHeader.IActorReceiver, MonoFSM<string, ActorState>.IMonoState
