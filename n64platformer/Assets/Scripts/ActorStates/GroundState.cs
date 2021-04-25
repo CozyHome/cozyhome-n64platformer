@@ -9,7 +9,7 @@ enum WalkType
     Run = 2
 }
 
-public class GroundState : State
+public class GroundState : ActorState
 {
     // pre-initialized references
     [Header("Outside References")]
@@ -25,28 +25,28 @@ public class GroundState : State
     [SerializeField] private AnimationCurve AnimatorSpeedCurve;
     [SerializeField] private AnimationCurve AccelerationCurve; // how fast we accelerate based on speed
     [SerializeField] private AnimationCurve DeaccelerationCurve; // how fast we deaccelerate based on speed
-    
+
     [Header("Speeds & Rates")]
     [SerializeField] private float MaxRotateSpeed = 960F;
     [SerializeField] private float MaxMoveSpeed = 20F;
     [SerializeField] private float MoveAcceleration = 30F;
     [SerializeField] private float WalkAcceleration = 10F;
-    
+
     // initialized references
     private ActorHeader.Actor PlayerActor;
 
     protected override void OnStateInitialize()
     {
         PlayerActor = GetComponent<ActorHeader.Actor>();
-        machine.SetCurrentState(this.Key);
+        machine.GetFSM.SetState(this.Key);
     }
 
-    public override void Enter(string previous_key, State previous_state)
+    public override void Enter(ActorState prev)
     {
 
     }
 
-    public override void Exit(string next_key, State next_state)
+    public override void Exit(ActorState next)
     {
         Animator.speed = 1F;
     }
@@ -69,13 +69,13 @@ public class GroundState : State
 
         if (!PlayerActor.Ground.stable)
         {
-            machine.SwitchCurrentState("Fall");
+            machine.GetFSM.SwitchState("Fall");
             return;
         }
 
         if (XButton)
         {
-            machine.SwitchCurrentState("Jump");
+            machine.GetFSM.SwitchState("Jump");
             return;
         }
 

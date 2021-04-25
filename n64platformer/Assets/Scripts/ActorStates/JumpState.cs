@@ -4,12 +4,12 @@ using com.cozyhome.Actors;
 using com.cozyhome.Vectors;
 using UnityEngine;
 
-public static class PlayerVars 
+public static class PlayerVars
 {
     public const float GRAVITY = 79.68F;
 }
 
-public class JumpState : State
+public class JumpState : ActorState
 {
     [SerializeField] private PlayerInput PlayerInput;
 
@@ -27,7 +27,7 @@ public class JumpState : State
         PlayerActor = GetComponent<ActorHeader.Actor>();
     }
 
-    public override void Enter(string previous_key, State previous_state)
+    public override void Enter(ActorState prev)
     {
         Vector3 Velocity = PlayerActor._velocity;
 
@@ -37,13 +37,13 @@ public class JumpState : State
 
         PlayerActor.SetVelocity(Velocity);
         PlayerActor.SetSnapEnabled(false);
-        
+
         HoldingJump = true;
 
         Animator.SetTrigger("Jump");
     }
 
-    public override void Exit(string next_key, State next_state)
+    public override void Exit(ActorState next)
     {
         PlayerActor.SetSnapEnabled(true);
         Animator.SetTrigger("Land");
@@ -59,7 +59,7 @@ public class JumpState : State
         float YComp = Velocity[1];
         float percent = YComp / InitialSpeed;
 
-        if(HoldingJump)
+        if (HoldingJump)
             gravitational_pull = GravityCurve.Evaluate(percent) * PlayerVars.GRAVITY;
 
         Velocity -= Vector3.up * gravitational_pull * fdt;
@@ -72,11 +72,12 @@ public class JumpState : State
     public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)
     {
         if (VectorHeader.Dot(PlayerActor._velocity, ground.normal) < 0F)
-            machine.SwitchCurrentState("Ground");
+            machine.GetFSM.SwitchState("Ground");
     }
 
     public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
     {
 
     }
+
 }

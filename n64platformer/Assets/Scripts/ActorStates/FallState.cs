@@ -4,7 +4,7 @@ using com.cozyhome.Actors;
 using com.cozyhome.Vectors;
 using UnityEngine;
 
-public class FallState : State
+public class FallState : ActorState
 {
     [SerializeField] private Animator Animator;
 
@@ -15,13 +15,13 @@ public class FallState : State
         PlayerActor = GetComponent<ActorHeader.Actor>();
     }
 
-    public override void Enter(string previous_key, State previous_state)
+    public override void Enter(ActorState prev)
     {
         Animator.SetTrigger("Fall");
         PlayerActor.SetSnapEnabled(false);
     }
 
-    public override void Exit(string next_key, State next_state)
+    public override void Exit(ActorState next)
     {
         Animator.SetTrigger("Land");
         PlayerActor.SetSnapEnabled(true);
@@ -30,7 +30,7 @@ public class FallState : State
     public override void Tick(float fdt)
     {
         Vector3 Velocity = PlayerActor._velocity;
-        Velocity -= Vector3.up * (PlayerVars.GRAVITY * fdt);        
+        Velocity -= Vector3.up * (PlayerVars.GRAVITY * fdt);
 
         PlayerActor.SetVelocity(Velocity);
     }
@@ -39,10 +39,9 @@ public class FallState : State
     public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)
     {
         if (VectorHeader.Dot(PlayerActor._velocity, ground.normal) < 0F)
-            machine.SwitchCurrentState("Ground");
+            machine.GetFSM.SwitchState("Ground");
     }
 
     public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
-    {}
-
+    { }
 }

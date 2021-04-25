@@ -1066,7 +1066,7 @@ namespace com.cozyhome.Actors
 
                         }
                         else /* if no ceiling is found, move the require distance upward */
-                            gposition += updir * (skin);
+                            gposition += updir * (skin + MIN_HOVER_DISTANCE);
 
                         /* 
                          if a snap was valid and allowed, 
@@ -1429,5 +1429,6 @@ namespace com.cozyhome.Actors
         public const float MIN_DISPLACEMENT = 0.001F; // min squared length of a displacement vector required for a Move() to proceed.
         public const float FLY_CREASE_EPSILON = 1F; // minimum distance angle during a crease check to disregard any normals being queried.
         public const float INWARD_STEP_DISTANCE = 0.01F; // minimum displacement into a stepping plane
+        public const float MIN_HOVER_DISTANCE = 0.025F;
     }
 }
