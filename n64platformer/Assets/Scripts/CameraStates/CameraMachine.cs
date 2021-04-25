@@ -5,75 +5,39 @@ using UnityEngine;
 
 public class CameraMachine : MonoBehaviour
 {
-    [SerializeField] private LayerMask clipmask;
+    private MonoFSM<string, CameraState> FSM;
+
+    [Header("Target References")]
     [SerializeField] private Transform ViewTransform;
     [SerializeField] private Transform OrbitTransform;
+    
+    [Header("Target Values")]
+    [SerializeField] private float DolleyDistance;
     [SerializeField] private float MaxVerticalAngle = 150F;
-    [SerializeField] private float DolleyDistance = 16F;
-
-    [SerializeField] private Vector3 WorldOffset;
-
-    private Dictionary<string, CameraState> States = new Dictionary<string, CameraState>();
-    private CameraState Current;
+    [SerializeField] private Vector3 WorldOffset = new Vector3(0, 4, 0);
 
     void Start()
     {
-        CameraState[] tmpbuffer = gameObject.GetComponents<CameraState>();
+        FSM = new MonoFSM<string, CameraState>();
 
+        CameraState[] tmpbuffer = GetComponents<CameraState>();
         for (int i = 0; i < tmpbuffer.Length; i++)
-        {
-            States.Add(tmpbuffer[i].GetKey, tmpbuffer[i]);
             tmpbuffer[i].Initialize(this);
-        }
+
     }
 
     void FixedUpdate()
     {
-        Current.FixedTick(Time.fixedDeltaTime);
+        FSM.Current.FixedTick(Time.fixedDeltaTime);
     }
+
     void Update()
     {
-        Current.Tick(Time.deltaTime);
+        FSM.Current.Tick(Time.deltaTime);
     }
 
-    public void SetCurrentState(string key) => Current = States[key];
+    public MonoFSM<string, CameraState> GetFSM => FSM;
 
-    public void SwitchCurrentState(string key)
-    {
-        CameraState next = States[key];
-        Current.Exit(key, next);
-        next.Enter(Current.GetKey, Current);
-        Current = next;
-        // notify exit
-        // notify enter
-        // swap
-    }
-
-    public void SetViewRotation(Quaternion quaternion)
-    {
-        ViewTransform.rotation = quaternion;
-    }
-
-    public void ApplyOrbitPosition()
-    {
-        ViewTransform.position = WorldOffset + OrbitTransform.position - ViewTransform.forward * DolleyDistance;
-    }
-
-    public void ApplyOrbitPositionGround()
-    {
-        Vector3 dir = -Vector3.up;
-        float dis = 7.5F;
-
-        if (Physics.Raycast(ViewTransform.position,
-        dir,
-        out RaycastHit hit,
-        dis,
-        clipmask,
-        QueryTriggerInteraction.Ignore))
-        {
-            ViewTransform.position = hit.point + Vector3.up * 5.0F;
-        }
-    }
 
     public void OrbitAroundTarget(Vector2 Input)
     {
@@ -96,40 +60,58 @@ public class CameraMachine : MonoBehaviour
         ) * ViewTransform.rotation;
     }
 
-    public void ComputeRealignments(
-        ref Quaternion initial,
-        ref Quaternion final)
+    public void ApplyOrbitPosition()
     {
+        ViewTransform.position =
+            OrbitTransform.position - ViewTransform.forward * DolleyDistance +
+            WorldOffset;
+    }
+
+    
+    public void SetViewRotation(Quaternion newrotation)
+    {
+        ViewTransform.rotation = newrotation;
+    }
+
+
+    public void ComputeRealignments(ref Quaternion Initial, ref Quaternion Final) 
+    {
+        Initial = ViewTransform.rotation;
+        
         Vector3 planarforward = ViewTransform.forward;
         planarforward[1] = 0F;
         planarforward.Normalize();
 
-        float YAngle = Vector3.SignedAngle(planarforward, OrbitTransform.forward, Vector3.up);
+        float YAngle = Vector3.SignedAngle(planarforward, 
+            OrbitTransform.forward, 
+            Vector3.up);
 
-        initial = ViewTransform.rotation;
-        final = Quaternion.AngleAxis(YAngle, Vector3.up) * ViewTransform.rotation;
+        Final = Quaternion.AngleAxis(YAngle, Vector3.up) * Initial;
     }
 }
 
-public abstract class CameraState : MonoBehaviour
+public abstract class CameraState : MonoBehaviour, MonoFSM<string, CameraState>.IMonoState
 {
     [SerializeField] private string Key;
+
     protected CameraMachine machine;
 
     public void Initialize(CameraMachine machine)
     {
         this.machine = machine;
+        machine.GetFSM.AddState(Key, this);
 
-
-        this.OnInitialize();
+        this.OnStateInitialize();
     }
 
-    protected abstract void OnInitialize();
+    protected abstract void OnStateInitialize();
 
-    public abstract void Enter(string previous_key, CameraState previous_state);
-    public abstract void Exit(string next_key, CameraState next_state);
-    public abstract void FixedTick(float fdt);
+    public abstract void Enter(CameraState prev);
+
+    public abstract void Exit(CameraState next);
+
     public abstract void Tick(float dt);
+    public abstract void FixedTick(float fdt);
 
     public string GetKey => Key;
 }

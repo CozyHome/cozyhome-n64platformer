@@ -710,13 +710,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.12940931, y: -0.12940931, z: 0.017037036, w: 0.98296297}
-  m_LocalPosition: {x: -80.6286, y: 35.15514, z: -38.032906}
+  m_LocalRotation: {x: -0.05488357, y: -0.13032585, z: -0.0072255395, w: 0.98992467}
+  m_LocalPosition: {x: -79.421104, y: 36.06398, z: -41.75359}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 15, y: -15, z: 0}
+  m_LocalEulerAnglesHint: {x: -6.347, y: -15, z: 0}
 --- !u!114 &963194229
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -726,16 +726,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 97305266517a8224f9e6ca0f8da0b854, type: 3}
+  m_Script: {fileID: 11500000, guid: 5e3999a1b87c0bd4787bc09603daa870, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clipmask:
-    serializedVersion: 2
-    m_Bits: 1
   ViewTransform: {fileID: 963194228}
   OrbitTransform: {fileID: 895036036}
+  DolleyDistance: 12
   MaxVerticalAngle: 150
-  DolleyDistance: 16
   WorldOffset: {x: 0, y: 4, z: 0}
 --- !u!114 &963194230
 MonoBehaviour:
@@ -746,35 +743,37 @@ MonoBehaviour:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 78a4b01f6d63d0a468b540079cc85b57, type: 3}
+  m_Script: {fileID: 11500000, guid: a08a915cbd5b2bf4c8ea91a57e88c37f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Key: Realign
-  RealignCurve:
+  Key: Orbit
+  EasingCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
-      inSlope: -0.027633736
-      outSlope: 0.050793685
-      tangentMode: 1
+      value: 0.25
+      inSlope: 0.033795364
+      outSlope: 0.033795364
+      tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.08642108
+      outWeight: 0.09479761
     - serializedVersion: 3
-      time: 1.0012207
+      time: 1
       value: 1
-      inSlope: -0.004374143
-      outSlope: 0.017244551
-      tangentMode: 1
-      weightedMode: 1
-      inWeight: 0.5018542
+      inSlope: 0.01049671
+      outSlope: 0.01049671
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.09820813
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  MaxTurnTime: 0.5
+  MaxEaseTime: 0.5
+  PlayerInput: {fileID: 45771647}
+  MaxOrbitSpeed: 240
 --- !u!114 &963194231
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -784,46 +783,46 @@ MonoBehaviour:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: efbeea1c831bde941a40316ccddd4dfc, type: 3}
+  m_Script: {fileID: 11500000, guid: a8f0de0b4fa58cf42a380d55a9a3af50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Key: Automatic
   PlayerInput: {fileID: 45771647}
-  AutomaticSensitivity: 80
-  MaxTurnTime: 0.5
+  MaxAutomaticSpeed: 80
   EasingCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0.036080625
-      outSlope: 0.036080625
+      inSlope: 0.013470228
+      outSlope: 0.013470228
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.529255
+      outWeight: 0.0815822
     - serializedVersion: 3
-      time: 0.2
+      time: 0.25
       value: 0
-      inSlope: Infinity
-      outSlope: 0.0449756
-      tangentMode: 7
+      inSlope: 0.000001964198
+      outSlope: 0.000001964198
+      tangentMode: 0
       weightedMode: 0
-      inWeight: 0.58083427
-      outWeight: 0.3343171
+      inWeight: 0.27317655
+      outWeight: 0.33333334
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: -0.023776585
-      outSlope: -0.023776585
+      inSlope: 0.08081919
+      outSlope: 0.08081919
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.08828169
+      inWeight: 0.08158219
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  MaxTurnTime: 0.5
 --- !u!114 &963194232
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -833,37 +832,35 @@ MonoBehaviour:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0bc0a2e3af5013645be96e1710fd5d8a, type: 3}
+  m_Script: {fileID: 11500000, guid: e3f1eed017b032d42bed8e45be0a55ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Key: Manual
-  PlayerInput: {fileID: 45771647}
-  MaxTurnTime: 1
-  ManualSensitivity: 240
-  EaseCurve:
+  Key: Align
+  EasingCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.49998856
-      inSlope: -0.035185788
-      outSlope: -0.035185788
+      value: 0
+      inSlope: -0.0055253897
+      outSlope: -0.0055253897
       tangentMode: 0
-      weightedMode: 0
+      weightedMode: 3
       inWeight: 0
-      outWeight: 0.06172839
+      outWeight: 0.7972806
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: -0
-      outSlope: -0
+      inSlope: -0.011050714
+      outSlope: -0.011050714
       tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.080246985
+      weightedMode: 1
+      inWeight: 0.7972806
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  MaxTurnTime: 0.5
 --- !u!1 &1005939957 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: dc08045877803e349a45201091ab27ad, type: 3}

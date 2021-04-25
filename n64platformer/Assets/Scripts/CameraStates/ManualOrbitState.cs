@@ -4,55 +4,61 @@ using UnityEngine;
 
 public class ManualOrbitState : CameraState
 {
+    
+    [Header("Animation Curves")]
+    [SerializeField] private AnimationCurve EasingCurve;
+
+    [SerializeField] private float MaxEaseTime = 0.5F;    
+    private float EaseTime = 0F; 
+
+
     [SerializeField] private PlayerInput PlayerInput;
-    [SerializeField] private float MaxTurnTime = 1F;
-    [SerializeField] private float ManualSensitivity = 240F;
+    [SerializeField] private float MaxOrbitSpeed = 240F;
 
-    [SerializeField] private AnimationCurve EaseCurve;
-    private float TurnTime;
+    protected override void OnStateInitialize()
+    {
+        
+    }
 
-    protected override void OnInitialize() { }
-
-    public override void Enter(string previous_key, CameraState previous_state)
+    public override void Enter(CameraState prev)
     {
 
     }
 
-    public override void Exit(string next_key, CameraState next_state)
+    public override void Exit(CameraState next)
     {
+        EaseTime = 0F;
         machine.ApplyOrbitPosition();
-        TurnTime = 0F;
     }
 
     public override void FixedTick(float fdt)
     {
         bool LeftTrigger = PlayerInput.GetLeftTrigger;
-        if (LeftTrigger)
+        if(LeftTrigger)
         {
-            machine.SwitchCurrentState("Realign");
+            machine.GetFSM.SwitchState("Align");
             return;
         }
 
         Vector2 Mouse = PlayerInput.GetRawMouse;
 
-        if (Mouse.sqrMagnitude > 0F)
+        if(Mouse.sqrMagnitude > 0F)
         {
-            TurnTime += fdt;
-            TurnTime = Mathf.Min(TurnTime, MaxTurnTime);
+            EaseTime += fdt;
+            EaseTime = Mathf.Min(EaseTime, MaxEaseTime);
         }
-        else
+        else 
         {
-            TurnTime -= fdt;
-            TurnTime = Mathf.Max(TurnTime, 0F);
+
+            EaseTime -= fdt;
+            EaseTime = Mathf.Max(EaseTime, 0F);
         }
 
-        float rate = EaseCurve.Evaluate(TurnTime / MaxTurnTime);
-        rate *= ManualSensitivity;
-        rate *= fdt;
+        float rate = EasingCurve.Evaluate(EaseTime / MaxEaseTime);
+        rate *= (MaxOrbitSpeed * fdt);
 
         machine.OrbitAroundTarget(Mouse * rate);
         machine.ApplyOrbitPosition();
-        machine.ApplyOrbitPositionGround();
     }
 
     public override void Tick(float dt)

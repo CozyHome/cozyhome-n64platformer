@@ -4,24 +4,30 @@ using UnityEngine;
 
 public class AutomaticOrbitState : CameraState
 {
+    [Header("References")]
     [SerializeField] private PlayerInput PlayerInput;
-    [SerializeField] private float AutomaticSensitivity = 80F;
-    [SerializeField] private float MaxTurnTime = 0.5F;
+    [SerializeField] private float MaxAutomaticSpeed = 80F;
+
+    [Header("Animation Curves")]
     [SerializeField] private AnimationCurve EasingCurve;
+
+    [SerializeField] private float MaxTurnTime = 0.5F;
     private float TurnTime;
 
-    protected override void OnInitialize()
-    { 
-        machine.SetCurrentState(this.GetKey);
+    protected override void OnStateInitialize()
+    {
+        machine.GetFSM.SetState(this);
     }
 
-    public override void Enter(string previous_key, CameraState previous_state)
-    {}
-
-    public override void Exit(string next_key, CameraState next_state)
+    public override void Enter(CameraState prev)
     {
-        machine.ApplyOrbitPosition();
+
+    }
+
+    public override void Exit(CameraState next)
+    {
         TurnTime = 0F;
+        machine.ApplyOrbitPosition();
     }
 
     public override void FixedTick(float fdt)
@@ -29,14 +35,15 @@ public class AutomaticOrbitState : CameraState
         bool LeftTrigger = PlayerInput.GetLeftTrigger;
         if(LeftTrigger)
         {
-            machine.SwitchCurrentState("Realign");
+            machine.GetFSM.SwitchState("Align");
             return;
         }
 
         Vector2 Mouse = PlayerInput.GetRawMouse;
+
         if(Mouse.sqrMagnitude > 0F) 
         {
-            machine.SwitchCurrentState("Manual");
+            machine.GetFSM.SwitchState("Orbit");
             return;
         }
 
@@ -51,19 +58,19 @@ public class AutomaticOrbitState : CameraState
         else
         {
             TurnTime -= fdt;
-            TurnTime = Mathf.Max(0F, TurnTime);
+            TurnTime = Mathf.Max(TurnTime, 0F);
         }
 
         float rate = EasingCurve.Evaluate(TurnTime / MaxTurnTime);
-        rate *= AutomaticSensitivity;
-        rate *= fdt;
+        rate *= (MaxAutomaticSpeed * fdt);
 
         machine.OrbitAroundTarget(Move * rate);
         machine.ApplyOrbitPosition();
-        
-    }   
+
+    }
 
     public override void Tick(float dt)
-    { }
+    {
 
+    }
 }
