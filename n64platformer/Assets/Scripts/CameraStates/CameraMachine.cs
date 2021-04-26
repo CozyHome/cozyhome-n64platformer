@@ -18,24 +18,24 @@ public class CameraMachine : MonoBehaviour
 
     /* Events */
     [Header("Event Subsystem References")]
-    [SerializeField] private MainMiddleman Middleman;
-    private ExecutionChain<int, MainMiddleman> MainChain;
+    [SerializeField] private CameraMiddleman Middleman;
+    private ExecutionChain<int, CameraMiddleman> MainChain;
 
-    [SerializeField] private ExecutionHeader.OnJumpExecution JumpExecution;
+    [SerializeField] private ExecutionHeader.Camera.OnJumpExecution JumpExecution;
+    [SerializeField] private ExecutionHeader.Camera.OnLedgeExecution LedgeExecution;
 
     public float VerticalOffset = 4F;
 
     void Start()
     {
         FSM = new MonoFSM<string, CameraState>();
-        MainChain = new ExecutionChain<int, MainMiddleman>(Middleman);
+        MainChain = new ExecutionChain<int, CameraMiddleman>(Middleman);
 
         AssignExecutions();
 
         CameraState[] tmpbuffer = GetComponents<CameraState>();
         for (int i = 0; i < tmpbuffer.Length; i++)
             tmpbuffer[i].Initialize(this);
-
     }
 
     void FixedUpdate()
@@ -43,7 +43,7 @@ public class CameraMachine : MonoBehaviour
         float fdt = Time.fixedDeltaTime;
 
         FSM.Current.FixedTick(fdt);
-        
+
         Middleman.SetFixedDeltaTime(fdt);
         MainChain.FixedTick();
     }
@@ -51,6 +51,23 @@ public class CameraMachine : MonoBehaviour
     void Update()
     {
         FSM.Current.Tick(Time.deltaTime);
+    }
+
+    private void AssignExecutions()
+    {
+        Middleman.SetMachine(this);
+
+        GetEventRegistry.Event_ActorJumped += delegate
+        {
+            MainChain.AddExecution(JumpExecution);
+        };
+
+        GetEventRegistry.Event_ActorFoundLedge += (Vector3 hang_position) =>
+        {
+            FSM.SwitchState("Manual");
+            LedgeExecution.Prepare(ViewTransform.position, hang_position);
+            MainChain.AddExecution(LedgeExecution);
+        };
     }
 
     public MonoFSM<string, CameraState> GetFSM => FSM;
@@ -77,25 +94,21 @@ public class CameraMachine : MonoBehaviour
         ) * ViewTransform.rotation;
     }
 
-    public void ApplyOrbitPosition(Vector3 offset)
+    public void ApplyOrbitPosition() => ViewTransform.position = ComputeOrbitPosition();
+
+    public Vector3 ComputeOrbitPosition()
     {
-        ViewTransform.position =
-            OrbitTransform.position - 
-            (ViewTransform.forward * DolleyDistance) + (Vector3.up * VerticalOffset) + offset;
+        return OrbitTransform.position - (ViewTransform.forward * DolleyDistance) + (Vector3.up * VerticalOffset);
+    }
+    public Vector3 ComputeOrbitPosition(Vector3 center)
+    {
+        return center - (ViewTransform.forward * DolleyDistance) + (Vector3.up * VerticalOffset);
     }
 
-    public void ApplyOrbitPosition()
-    {
-        ViewTransform.position =
-            OrbitTransform.position - 
-            (ViewTransform.forward * DolleyDistance) + (Vector3.up * VerticalOffset);
-    }
-
-    public void SetViewRotation(Quaternion newrotation)
-    {
-        ViewTransform.rotation = newrotation;
-    }
-
+    public void ApplyOffset(Vector3 offset) => ViewTransform.position += offset;
+    public void SetViewPosition(Vector3 position) => ViewTransform.position = position;
+    public void SetViewRotation(Quaternion newrotation) => ViewTransform.rotation = newrotation;
+    
     public void ComputeRealignments(ref Quaternion Initial, ref Quaternion Final)
     {
         Initial = ViewTransform.rotation;
@@ -109,16 +122,6 @@ public class CameraMachine : MonoBehaviour
             Vector3.up);
 
         Final = Quaternion.AngleAxis(YAngle, Vector3.up) * Initial;
-    }
-
-    private void AssignExecutions()
-    {
-        Middleman.SetMachine(this);
-
-        GetEventRegistry.Event_ActorJumped += delegate
-        {
-            MainChain.AddExecution(JumpExecution);
-        };
     }
 }
 
@@ -149,13 +152,12 @@ public abstract class CameraState : MonoBehaviour, MonoFSM<string, CameraState>.
 }
 
 [System.Serializable]
-public class MainMiddleman
+public class CameraMiddleman
 {
     public void SetMachine(CameraMachine machine) => this.machine = machine;
     public void SetFixedDeltaTime(float fdt) => this.fdt = fdt;
     private CameraMachine machine;
     private float fdt;
-
 
     public CameraMachine Machine => machine;
     public float FDT => fdt;

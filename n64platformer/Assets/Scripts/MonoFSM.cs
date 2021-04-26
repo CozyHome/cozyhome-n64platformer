@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -21,6 +22,18 @@ public class MonoFSM<T1, T2> where T2 : MonoFSM<T1, T2>.IMonoState
         // notify enter
         // swap
         T2 next = StateRegistry[nextkey];
+        _Current.Exit(next);
+        next.Enter(_Current);
+        _Current = next;
+    }
+
+    public void SwitchState(Action<T2> prepare, T1 nextkey)
+    {
+        T2 next = StateRegistry[nextkey];
+        prepare.Invoke(next);
+        // notify exit
+        // notify enter
+        // swap
         _Current.Exit(next);
         next.Enter(_Current);
         _Current = next;

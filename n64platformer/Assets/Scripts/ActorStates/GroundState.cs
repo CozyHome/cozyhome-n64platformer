@@ -11,14 +11,6 @@ enum WalkType
 
 public class GroundState : ActorState
 {
-    // pre-initialized references
-    [Header("Outside References")]
-    [SerializeField] private Transform CameraView;
-    [SerializeField] private Transform ModelView;
-    [SerializeField] private Animator Animator;
-    [SerializeField] private PlayerInput PlayerInput;
-
-
     // values
     [Header("Animation Curves")]
     [SerializeField] private AnimationCurve RunRotationalCurve;
@@ -32,33 +24,35 @@ public class GroundState : ActorState
     [SerializeField] private float MoveAcceleration = 30F;
     [SerializeField] private float WalkAcceleration = 10F;
 
-    // initialized references
-    private ActorHeader.Actor PlayerActor;
-
     protected override void OnStateInitialize()
     {
-        PlayerActor = GetComponent<ActorHeader.Actor>();
-        machine.GetFSM.SetState(this.Key);
+        Machine.GetFSM.SetState(this.Key);
     }
 
     public override void Enter(ActorState prev)
     {
-
+        Machine.GetEventRegistry.Event_ActorLanded?.Invoke();
     }
 
     public override void Exit(ActorState next)
     {
-        Animator.speed = 1F;
+        Machine.GetAnimator.speed = 1F;
     }
 
     public override void Tick(float fdt)
     {
+        Transform ModelView = Machine.GetModelView;
+        Transform CameraView = Machine.GetCameraView;
+        ActorHeader.Actor Actor = Machine.GetActor;
+        PlayerInput PlayerInput = Machine.GetPlayerInput;
+        Animator Animator = Machine.GetAnimator;
+
         Vector2 Local = PlayerInput.GetRawMove;
         bool XButton = PlayerInput.GetXButton;
 
         Quaternion CameraRotation = CameraView.rotation;
         Vector3 Move = CameraRotation * new Vector3(Local[0], 0F, Local[1]);
-        Vector3 Velocity = PlayerActor._velocity;
+        Vector3 Velocity = Actor._velocity;
 
         float JoystickAmount = Local.magnitude;
         float Speed = Velocity.magnitude;
@@ -67,15 +61,15 @@ public class GroundState : ActorState
         Move[1] = 0F;
         Move.Normalize();
 
-        if (!PlayerActor.Ground.stable)
+        if (!Actor.Ground.stable)
         {
-            machine.GetFSM.SwitchState("Fall");
+            Machine.GetFSM.SwitchState("Fall");
             return;
         }
 
         if (XButton)
         {
-            machine.GetFSM.SwitchState("Jump");
+            Machine.GetFSM.SwitchState("Jump");
             return;
         }
 
@@ -114,9 +108,9 @@ public class GroundState : ActorState
         }
 
         Velocity = ModelView.rotation * new Vector3(0, 0, 1F);
-        VectorHeader.CrossProjection(ref Velocity, Vector3.up, PlayerActor.Ground.normal);
+        VectorHeader.CrossProjection(ref Velocity, Vector3.up, Actor.Ground.normal);
 
-        PlayerActor.SetVelocity(Velocity * Speed);
+        Actor.SetVelocity(Velocity * Speed);
 
         Animator.SetFloat("Speed", Speed / MaxMoveSpeed);
     }
@@ -133,8 +127,8 @@ public class GroundState : ActorState
 
     private void MoveRotate(Vector3 move, float rate)
     {
-        ModelView.rotation = Quaternion.RotateTowards(
-                ModelView.rotation,
+        Machine.GetModelView.rotation = Quaternion.RotateTowards(
+                Machine.GetModelView.rotation,
                 Quaternion.LookRotation(move, Vector3.up),
                 rate);
     }

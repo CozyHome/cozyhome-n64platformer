@@ -11,53 +11,75 @@ public static class PlayerVars
 
 public class JumpState : ActorState
 {
-    [SerializeField] private PlayerInput PlayerInput;
+    [Header("General References")]
+    [SerializeField] private LedgeRegistry LedgeRegistry;
 
+    [Header("Jump Properties")]
     [SerializeField] private float JumpHeight = 4F;
-    [SerializeField] private Animator Animator;
-    [SerializeField] private AnimationCurve FallTimeCurve;
-    [SerializeField] private AnimationCurve GravityCurve;
-
+    [SerializeField] private float MaxLedgeVelocity = 1.0F;
     private float InitialSpeed;
     private bool HoldingJump = true;
 
-    private ActorHeader.Actor PlayerActor;
+    [Header("Animation Curves")]
+    [SerializeField] private AnimationCurve FallTimeCurve;
+    [SerializeField] private AnimationCurve GravityCurve;
+
+
     protected override void OnStateInitialize()
     {
-        PlayerActor = GetComponent<ActorHeader.Actor>();
+
     }
 
     public override void Enter(ActorState prev)
     {
-        Vector3 Velocity = PlayerActor._velocity;
+        ActorHeader.Actor Actor = Machine.GetActor;
+        Vector3 Velocity = Actor._velocity;
 
         InitialSpeed = Mathf.Sqrt(2F * PlayerVars.GRAVITY * JumpHeight);
-
         Velocity += Vector3.up * InitialSpeed;
-
-        PlayerActor.SetVelocity(Velocity);
-        PlayerActor.SetSnapEnabled(false);
-
-        HoldingJump = true;
-
-        Animator.SetTrigger("Jump");
-
-        /* notify our callback system */
         
-        machine.GetEventRegistry.Event_ActorJumped?.Invoke();
+        Actor.SetVelocity(Velocity);
+        Actor.SetSnapEnabled(false);
+        
+        HoldingJump = true;
+        Machine.GetAnimator.SetTrigger("Jump");
+        
+        /* notify our callback system */
+        Machine.GetEventRegistry.Event_ActorJumped?.Invoke();
     }
 
     public override void Exit(ActorState next)
     {
-        PlayerActor.SetSnapEnabled(true);
-        Animator.SetTrigger("Land");
+        Machine.GetActor.SetSnapEnabled(true);
     }
 
     public override void Tick(float fdt)
     {
+        ActorHeader.Actor Actor = Machine.GetActor;
+        PlayerInput PlayerInput = Machine.GetPlayerInput;
+
+        /* Continual Ledge Detection  */
+        if (/* only do if falling */ VectorHeader.Dot(Machine.GetActor._velocity, Vector3.up) <= MaxLedgeVelocity &&
+            LedgeRegistry.DetectLedge(
+            LedgeRegistry.GetProbeDistance,
+            Actor._position,
+            Machine.GetModelView.forward,
+            Actor.orientation,
+            out Vector3 ledge_position))
+        {
+            Machine.GetFSM.SwitchState("Ledge");
+            ((LedgeState)Machine.GetFSM.Current).Prepare(
+                Actor._position,
+                ledge_position
+            );
+
+            /* attach callback to process setting our initial values on time */
+            return;
+        }
+
         HoldingJump &= PlayerInput.GetXButton;
 
-        Vector3 Velocity = PlayerActor._velocity;
+        Vector3 Velocity = Actor._velocity;
 
         float gravitational_pull = PlayerVars.GRAVITY;
         float YComp = Velocity[1];
@@ -68,20 +90,23 @@ public class JumpState : ActorState
 
         Velocity -= Vector3.up * gravitational_pull * fdt;
 
-        Animator.SetFloat("Time", FallTimeCurve.Evaluate(percent));
+        Machine.GetAnimator.SetFloat("Time", FallTimeCurve.Evaluate(percent));
 
-        PlayerActor.SetVelocity(Velocity);
+        Actor.SetVelocity(Velocity);
     }
 
     public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)
     {
-        if (VectorHeader.Dot(PlayerActor._velocity, ground.normal) < 0F)
-            machine.GetFSM.SwitchState("Ground");
+        if (VectorHeader.Dot(Machine.GetActor._velocity, ground.normal) < 0F)
+        {
+            Machine.GetFSM.SwitchState("Ground");
+            Machine.GetAnimator.SetTrigger("Land");
+        }
     }
 
     public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
     {
-
+        
     }
 
 }

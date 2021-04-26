@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ExecutionChain<T1, T2>
 {
-    private List<Execution> Executions;
+    private SortedList<T1, Execution> Executions;
     private Dictionary<T1, Execution> ExecutionRegistry;
     private T2 Middleman;
 
@@ -12,7 +12,7 @@ public class ExecutionChain<T1, T2>
     {
         this.Middleman = Middleman;
 
-        Executions = new List<Execution>();
+        Executions = new SortedList<T1, Execution>();
         ExecutionRegistry = new Dictionary<T1, Execution>();
     }
 
@@ -24,16 +24,30 @@ public class ExecutionChain<T1, T2>
         {
             newexecution.Enter(Middleman);
 
-            Executions.Add(newexecution);
+            Executions.Add(newexecution.GetKey, newexecution);
             ExecutionRegistry.Add(newexecution.GetKey, newexecution);
         }
     }
 
+    public void EndExecution(T1 key) 
+    {
+        if(!ExecutionRegistry.ContainsKey(key))
+            return;
+        else 
+        {
+            Executions.Remove(key);
+            ExecutionRegistry.Remove(key);
+        }
+    }
+
+    public bool IsExecutionActive(T1 key) => ExecutionRegistry.ContainsKey(key);
+    
     public void FixedTick()
     {
+        IList<Execution> ExecutionValues = Executions.Values;
         for (int i = 0; i < Executions.Count; i++)
         {
-            Execution current = Executions[i];
+            Execution current = ExecutionValues[i];
             if (current == null)
                 continue;
             else
@@ -44,7 +58,7 @@ public class ExecutionChain<T1, T2>
                 {
                     current.Exit(Middleman);
 
-                    Executions.RemoveAt(i);
+                    Executions.Remove(current.GetKey);
                     ExecutionRegistry.Remove(current.GetKey);
                 }
             }

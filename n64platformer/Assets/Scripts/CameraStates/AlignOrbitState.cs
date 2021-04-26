@@ -54,6 +54,6 @@ public class AlignOrbitState : CameraState
 
     public override void Tick(float dt)
     {
-
+        
     }
 }
