@@ -359,7 +359,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Key: Jump
   LedgeRegistry: {fileID: 864958339}
-  JumpHeight: 4.4
+  JumpHeight: 5
   MaxLedgeVelocity: 1
   FallTimeCurve:
     serializedVersion: 2
@@ -452,17 +452,17 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 2
-      inSlope: -0.9500122
-      outSlope: -0.9500122
+      inSlope: -0.8500061
+      outSlope: -0.8500061
       tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 1
-      value: 1.0499878
-      inSlope: -0.9500122
-      outSlope: -0.9500122
+      value: 1.1499939
+      inSlope: -0.8500061
+      outSlope: -0.8500061
       tangentMode: 34
       weightedMode: 0
       inWeight: 0.33333334
@@ -519,9 +519,9 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   MaxRotateSpeed: 960
-  MaxMoveSpeed: 20
+  MaxMoveSpeed: 24
   MoveAcceleration: 30
-  WalkAcceleration: 10
+  WalkAcceleration: 20
 --- !u!114 &864958336
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -576,8 +576,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MaxLedgeHeight: 4
-  MinLedgeHeight: 3.75
-  ProbeDistance: 0.05
+  MinLedgeHeight: 3.25
+  ProbeDistance: 0.1
   ValidLedgeMask:
     serializedVersion: 2
     m_Bits: 1
@@ -622,7 +622,7 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    MaxLedgeTime: 0.25
+    MaxLedgeTime: 0.06
 --- !u!114 &864958341
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -871,7 +871,7 @@ MonoBehaviour:
   ViewTransform: {fileID: 963194228}
   OrbitTransform: {fileID: 895036036}
   ActorEventRegistry: {fileID: 864958338}
-  DolleyDistance: 12
+  DolleyDistance: 16
   MaxVerticalAngle: 150
   JumpExecution:
     key: 1

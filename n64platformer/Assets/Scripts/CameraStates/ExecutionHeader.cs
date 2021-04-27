@@ -138,7 +138,7 @@ public static class ExecutionHeader
                             hang_rotation,
                             percent);
 
-                    Actor.SetVelocity(Vector3.zero);
+                    Middleman.Machine.GetActor.SetVelocity(Vector3.zero);
 
                     return true;
                 }
