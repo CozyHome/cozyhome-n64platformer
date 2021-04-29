@@ -25,25 +25,43 @@ public class JumpState : ActorState
     [SerializeField] private AnimationCurve GravityCurve;
 
 
+    private float LastLandTime = 0F;
+    private float LastJumpTilt = 0F;
+
     protected override void OnStateInitialize()
     {
-
+        Machine.GetEventRegistry.Event_ActorLanded += delegate
+        {
+            LastLandTime = Time.time;
+        };
     }
 
     public override void Enter(ActorState prev)
     {
+        Animator Animator = Machine.GetAnimator;
         ActorHeader.Actor Actor = Machine.GetActor;
         Vector3 Velocity = Actor._velocity;
 
         InitialSpeed = Mathf.Sqrt(2F * PlayerVars.GRAVITY * JumpHeight);
         Velocity += Vector3.up * InitialSpeed;
-        
+
         Actor.SetVelocity(Velocity);
         Actor.SetSnapEnabled(false);
-        
+
         HoldingJump = true;
-        Machine.GetAnimator.SetTrigger("Jump");
-        
+        Animator.SetTrigger("Jump");
+        /* swap jump poses */
+
+        if (Time.time - LastLandTime < 1F)
+        {
+            LastJumpTilt++;
+            LastJumpTilt %= 2;
+
+            Animator.SetFloat("Tilt", LastJumpTilt);
+        }
+        else
+            Animator.SetFloat("Tilt", 0F);
+
         /* notify our callback system */
         Machine.GetEventRegistry.Event_ActorJumped?.Invoke();
     }
@@ -67,11 +85,12 @@ public class JumpState : ActorState
             Actor.orientation,
             out Vector3 ledge_position))
         {
-            Machine.GetFSM.SwitchState("Ledge");
-            ((LedgeState)Machine.GetFSM.Current).Prepare(
-                Actor._position,
-                ledge_position
-            );
+            Machine.GetFSM.SwitchState(
+                (ActorState next) =>
+                {
+                    ((LedgeState)next).Prepare(Actor._position, ledge_position);
+                },
+                "Ledge");
 
             /* attach callback to process setting our initial values on time */
             return;
@@ -97,16 +116,17 @@ public class JumpState : ActorState
 
     public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)
     {
-        if (VectorHeader.Dot(Machine.GetActor._velocity, ground.normal) < 0F)
+
+    }
+    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
+    {
+        if (
+            VectorHeader.Dot(Machine.GetActor.Ground.normal, velocity) < 0F &&
+            VectorHeader.Dot(velocity, trace.normal) <= 0F)
         {
             Machine.GetFSM.SwitchState("Ground");
             Machine.GetAnimator.SetTrigger("Land");
         }
-    }
-
-    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
-    {
-        
     }
 
 }

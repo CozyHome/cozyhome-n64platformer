@@ -64,9 +64,9 @@ public class CameraMachine : MonoBehaviour
 
         GetEventRegistry.Event_ActorFoundLedge += (Vector3 hang_position) =>
         {
-            FSM.SwitchState("Manual");
             LedgeExecution.Prepare(ViewTransform.position, hang_position);
             MainChain.AddExecution(LedgeExecution);
+            FSM.SwitchState("Manual");
         };
     }
 

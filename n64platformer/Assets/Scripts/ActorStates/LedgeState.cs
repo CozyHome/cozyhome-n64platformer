@@ -8,9 +8,6 @@ using UnityEngine;
 
 public class LedgeState : ActorState
 {
-    [Header("General References")]
-    [SerializeField] private ActorHeader.Actor PlayerActor;
-    [SerializeField] private Animator Animator;
 
     private ArchetypeHeader.Archetype PlayerArchetype;
     private Vector3 ledge_position, mantle_position, hang_position;
@@ -20,7 +17,7 @@ public class LedgeState : ActorState
 
     protected override void OnStateInitialize()
     {
-        PlayerArchetype = PlayerActor.GetArchetype();
+        PlayerArchetype = Machine.GetActor.GetArchetype();
 
         Machine.GetEventRegistry.Event_ActorFoundLedge += delegate
         {
@@ -41,6 +38,7 @@ public class LedgeState : ActorState
 
     public void Prepare(Vector3 position, Vector3 newposition)
     {
+        Animator Animator = Machine.GetAnimator;
         Animator.SetTrigger("Hang");
 
         this.ledge_position = position;

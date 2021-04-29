@@ -1144,7 +1144,13 @@ namespace com.cozyhome.Actors
                         Collider otherc = overlapbuffer[_colliderindex];
                         Transform othert = otherc.GetComponent<Transform>();
 
-                        if (Physics.ComputePenetration(self, position, orientation, otherc, othert.position, othert.rotation, out Vector3 _normal, out float _distance))
+                        if (Physics.ComputePenetration(self, 
+                            position, orientation,
+                            otherc, 
+                            othert.position, 
+                            othert.rotation, 
+                            out Vector3 _normal, 
+                            out float _distance))
                         {
                             position += _normal * (_distance + skin);
 

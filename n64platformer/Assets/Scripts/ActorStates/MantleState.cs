@@ -5,6 +5,7 @@ using UnityEngine;
 public class MantleState : ActorState
 {
     [Header("Mantle Parameters")]
+    [SerializeField] private float GravitationalScale = 0.5F;
     [SerializeField] private float UpwardOffset;
     [SerializeField] private float InwardAcceleration;
 
@@ -29,7 +30,7 @@ public class MantleState : ActorState
         ActorHeader.Actor Actor = Machine.GetActor;
 
         float dot = displacement[1];
-        InitialUpwardSpeed = Mathf.Sqrt(2F * PlayerVars.GRAVITY * (dot + UpwardOffset));
+        InitialUpwardSpeed = Mathf.Sqrt(GravitationalScale * 2F * PlayerVars.GRAVITY * (dot + UpwardOffset));
 
         Actor.SetVelocity(Vector3.up * InitialUpwardSpeed);
         Actor.SetSnapEnabled(false);
@@ -67,7 +68,7 @@ public class MantleState : ActorState
         Vector3 Velocity = Actor._velocity;
 
         /* grav */
-        Velocity -= Vector3.up * (PlayerVars.GRAVITY * fdt);
+        Velocity -= Vector3.up * (GravitationalScale * PlayerVars.GRAVITY * fdt);
 
         /* To give the player the ability to land on the platform in front of them, we'll apply an inward velocity every frame */
 

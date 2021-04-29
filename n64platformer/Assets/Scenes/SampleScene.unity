@@ -176,6 +176,81 @@ MonoBehaviour:
   RawMouse: {x: 0, y: 0}
   RawXButton: 0
   RawLeftTrigger: 0
+--- !u!1001 &412792578
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 864958331}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
+      propertyPath: m_Name
+      value: LyricRedo
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 29ce1c11b60cca642bc571c7a2533566, type: 2}
+    - target: {fileID: 5866666021909216657, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
+--- !u!4 &412792579 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
+  m_PrefabInstance: {fileID: 412792578}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &412792580 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
+  m_PrefabInstance: {fileID: 412792578}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -306,7 +381,7 @@ Transform:
   m_LocalPosition: {x: -79.5, y: 26.25, z: -19.75}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 895036036}
+  - {fileID: 412792579}
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
@@ -436,7 +511,7 @@ MonoBehaviour:
       outWeight: 0.11370303
     - serializedVersion: 3
       time: 1
-      value: 0.5
+      value: 0.6499939
       inSlope: 0.018021796
       outSlope: 0.018021796
       tangentMode: 0
@@ -518,9 +593,36 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  MaxRotateSpeed: 960
-  MaxMoveSpeed: 24
-  MoveAcceleration: 30
+  TiltCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: -0
+      outSlope: -0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.074165635
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: -0.030202156
+      outSlope: -0.030202156
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.07292956
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  TiltSpeedAmount: 0.375
+  TiltSpeedInfluence: 0.125
+  TiltSpeedVelocity: 2
+  MaxRotateSpeed: 840
+  MaxMoveSpeed: 20
+  MoveAcceleration: 25
   WalkAcceleration: 20
 --- !u!114 &864958336
 MonoBehaviour:
@@ -534,9 +636,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3be8ae9b404d2d24dacf8b0c417aefad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ModelView: {fileID: 895036036}
+  ModelView: {fileID: 412792579}
   CameraView: {fileID: 963194228}
-  Animator: {fileID: 1005939958}
+  Animator: {fileID: 412792580}
   PlayerInput: {fileID: 45771647}
 --- !u!114 &864958337
 MonoBehaviour:
@@ -594,8 +696,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Key: Ledge
-  PlayerActor: {fileID: 864958332}
-  Animator: {fileID: 1005939958}
   OnLedgeExecution:
     key: 0
     LedgeCurve:
@@ -636,7 +736,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Key: Mantle
-  UpwardOffset: 1.5
+  GravitationalScale: 0.5
+  UpwardOffset: 0.5
   InwardAcceleration: 10
   EaseCurve:
     serializedVersion: 2
@@ -686,88 +787,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!1001 &895036035
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 864958331}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: dc08045877803e349a45201091ab27ad, type: 3}
-      propertyPath: m_RootOrder
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: dc08045877803e349a45201091ab27ad, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: dc08045877803e349a45201091ab27ad, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: dc08045877803e349a45201091ab27ad, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: dc08045877803e349a45201091ab27ad, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: dc08045877803e349a45201091ab27ad, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: dc08045877803e349a45201091ab27ad, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: dc08045877803e349a45201091ab27ad, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: dc08045877803e349a45201091ab27ad, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: dc08045877803e349a45201091ab27ad, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: dc08045877803e349a45201091ab27ad, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -7411061928374691235, guid: dc08045877803e349a45201091ab27ad, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: 6905f325e32a7cf40af2ab878a878f3f, type: 2}
-    - target: {fileID: -4900364093023731523, guid: dc08045877803e349a45201091ab27ad, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: edfe1a9f15ca6ec418359806d1d86b62, type: 2}
-    - target: {fileID: 919132149155446097, guid: dc08045877803e349a45201091ab27ad, type: 3}
-      propertyPath: m_Name
-      value: _Lyric_Model_Platformer
-      objectReference: {fileID: 0}
-    - target: {fileID: 7303110969578990368, guid: dc08045877803e349a45201091ab27ad, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: 276d762a1aaa4f242bcfb266b5f2e9eb, type: 2}
-    - target: {fileID: 7472899212689147909, guid: dc08045877803e349a45201091ab27ad, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: 55cead46de30a924ea8aa6cbdee25c1b, type: 2}
-    - target: {fileID: 8780691006778126227, guid: dc08045877803e349a45201091ab27ad, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: ec8092be246cff64f8d9301f43ccbf1d, type: 2}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: dc08045877803e349a45201091ab27ad, type: 3}
---- !u!4 &895036036 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: dc08045877803e349a45201091ab27ad, type: 3}
-  m_PrefabInstance: {fileID: 895036035}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -869,7 +888,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ViewTransform: {fileID: 963194228}
-  OrbitTransform: {fileID: 895036036}
+  OrbitTransform: {fileID: 412792579}
   ActorEventRegistry: {fileID: 864958338}
   DolleyDistance: 16
   MaxVerticalAngle: 150
@@ -909,7 +928,7 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     MaxJumpTime: 0.5
-    BounceHeight: 1
+    BounceHeight: 0.5
   LedgeExecution:
     key: 0
     LedgeCurve:
@@ -1078,30 +1097,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Key: Idle
---- !u!1 &1005939957 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: dc08045877803e349a45201091ab27ad, type: 3}
-  m_PrefabInstance: {fileID: 895036035}
-  m_PrefabAsset: {fileID: 0}
---- !u!95 &1005939958
-Animator:
-  serializedVersion: 3
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1005939957}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 7a90f2a29814d654db3c34523f906b50, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1001 &1475765255
 PrefabInstance:
   m_ObjectHideFlags: 0
