@@ -19,7 +19,7 @@ public class LedgeRegistry : MonoBehaviour
 
     void Start()
     {
-        Archetype = GetComponent<BoxActor>().GetArchetype();
+        Archetype = GetComponent<ActorHeader.Actor>().GetArchetype();
     }
 
     public bool DetectLedge(

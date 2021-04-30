@@ -2,6 +2,12 @@ using com.cozyhome.Actors;
 using com.cozyhome.Vectors;
 using UnityEngine;
 
+enum MantleType
+{
+    Fast = 0,
+    Slow = 1
+};
+
 public class MantleState : ActorState
 {
     [Header("Mantle Parameters")]
@@ -9,76 +15,94 @@ public class MantleState : ActorState
     [SerializeField] private float UpwardOffset;
     [SerializeField] private float InwardAcceleration;
 
-    [Header("Animation Curves")]
-    [SerializeField] private AnimationCurve EaseCurve;
-    [SerializeField] private AnimationCurve SpeedCurve;
-    private float InitialUpwardSpeed;
+    [Header("Animation Data")]
+    [SerializeField] private AnimationMoveBundle AnimationMoveBundle;
 
-    private Vector3 displacement;
+    private Vector3 Displacement;
+    private MantleType MantleType;
 
     public void Prepare(Vector3 hang_position, Vector3 mantle_position) /* Called when player presses XButton in LedgeState */
     {
-        displacement = mantle_position - hang_position;
+        Displacement = mantle_position - hang_position;
+        MantleType = MantleType.Slow;
     }
 
     protected override void OnStateInitialize()
     {
 
     }
+
     public override void Enter(ActorState prev)
     {
         ActorHeader.Actor Actor = Machine.GetActor;
+        Animator Animator = Machine.GetAnimator;
+        float UpwardVelocity = Displacement[1];
 
-        float dot = displacement[1];
-        InitialUpwardSpeed = Mathf.Sqrt(GravitationalScale * 2F * PlayerVars.GRAVITY * (dot + UpwardOffset));
+        /* Events: */
+        AnimatorEventRegistry AnimatorEventRegistry = Machine.GetAnimatorEventRegistry;
+        AnimatorEventRegistry.Event_AnimatorMove += OnAnimatorMove;
 
-        Actor.SetVelocity(Vector3.up * InitialUpwardSpeed);
+        AnimationMoveBundle.Clear();
+
+        /* Mantle Type */
+        switch (MantleType)
+        {
+            case MantleType.Fast:
+                Animator.SetInteger("Step", 1);
+                break;
+            case MantleType.Slow:
+                Animator.SetInteger("Step", 2);
+                break;
+        }
+
+        Animator.SetFloat("Time", 0F);
         Actor.SetSnapEnabled(false);
-
-        Machine.GetAnimator.SetInteger("Step", 1);
     }
 
     public override void Exit(ActorState next)
-    {        
+    {
         ActorHeader.Actor Actor = Machine.GetActor;
+        Animator Animator = Machine.GetAnimator;
+
+        /* Events: */
+        AnimatorEventRegistry AnimatorEventRegistry = Machine.GetAnimatorEventRegistry;
+        AnimatorEventRegistry.Event_AnimatorMove -= OnAnimatorMove;
 
         Actor.SetSnapEnabled(true);
         Machine.GetAnimator.SetInteger("Step", 0);
     }
 
-    public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)
-    {
-        if (VectorHeader.Dot(Machine.GetActor._velocity, ground.normal) < 0F)
-        {
-            Machine.GetAnimator.SetTrigger("Land");
-            Machine.GetFSM.SwitchState("Ground");
-        }
-    }
+    public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask) { }
 
-    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
-    {
-
-    }
+    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity) { }
 
     public override void Tick(float fdt)
     {
         Transform ModelView = Machine.GetModelView;
         Animator Animator = Machine.GetAnimator;
         ActorHeader.Actor Actor = Machine.GetActor;
-        Vector3 Velocity = Actor._velocity;
 
-        /* grav */
-        Velocity -= Vector3.up * (GravitationalScale * PlayerVars.GRAVITY * fdt);
+        float NormalizedTime = Animator.GetCurrentAnimatorStateInfo(0).normalizedTime;
+        Vector3 AnimationVelocity = AnimationMoveBundle.GetRootDisplacement(fdt);
+        AnimationMoveBundle.Clear();
 
         /* To give the player the ability to land on the platform in front of them, we'll apply an inward velocity every frame */
+        Actor.SetVelocity(AnimationVelocity);
 
-        float Percent = Velocity[1] / InitialUpwardSpeed;
-        float Ease = EaseCurve.Evaluate(Percent);
-        float Proportion = SpeedCurve.Evaluate(Percent);
+        if (Actor.Ground.stable && AnimationVelocity[1] <= 0F)
+        {
+            Machine.GetFSM.SwitchState(
+            (ActorState next) =>
+            {
+                Machine.GetAnimator.SetTrigger("Land");
+            }, "Ground");
+        }
+    }
 
-        Velocity += ModelView.forward * (Proportion * InwardAcceleration * fdt);
-        
-        Animator.SetFloat("Time", Ease);
-        Actor.SetVelocity(Velocity);
+    private void OnAnimatorMove()
+    {
+        Animator Animator = Machine.GetAnimator;
+
+        AnimationMoveBundle.Accumulate(Animator.deltaPosition, Animator.deltaRotation);
     }
 }

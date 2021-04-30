@@ -28,7 +28,7 @@ public class ManualOrbitState : CameraState
     public override void Exit(CameraState next)
     {
         EaseTime = 0F;
-        machine.ApplyOrbitPosition();
+        Machine.ApplyOrbitPosition();
     }
 
     public override void FixedTick(float fdt)
@@ -36,7 +36,11 @@ public class ManualOrbitState : CameraState
         bool LeftTrigger = PlayerInput.GetLeftTrigger;
         if (LeftTrigger)
         {
-            machine.GetFSM.SwitchState("Align");
+            Machine.GetFSM.SwitchState(
+            (CameraState next) => 
+            {
+                ((AlignOrbitState) next).Prepare();
+            }, "Align");
             return;
         }
 
@@ -57,8 +61,8 @@ public class ManualOrbitState : CameraState
         float rate = EasingCurve.Evaluate(EaseTime / MaxEaseTime);
         rate *= (MaxOrbitSpeed * fdt);
 
-        machine.OrbitAroundTarget(Mouse * rate);
-        machine.ApplyOrbitPosition();
+        Machine.OrbitAroundTarget(Mouse * rate);
+        Machine.ApplyOrbitPosition();
     }
 
     public override void Tick(float dt)

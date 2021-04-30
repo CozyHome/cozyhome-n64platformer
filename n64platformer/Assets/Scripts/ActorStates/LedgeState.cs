@@ -19,7 +19,7 @@ public class LedgeState : ActorState
     {
         PlayerArchetype = Machine.GetActor.GetArchetype();
 
-        Machine.GetEventRegistry.Event_ActorFoundLedge += delegate
+        Machine.GetActorEventRegistry.Event_ActorFoundLedge += delegate
         {
             /* Set Ledge Values invokes our ledge event */
             OnLedgeExecution.Prepare(ledge_position, hang_position, mantle_position, Machine.GetModelView.rotation);
@@ -48,7 +48,7 @@ public class LedgeState : ActorState
         hang_position += VectorHeader.ProjectVector(mantle_position - ledge_position, Vector3.up);
         hang_position -= Vector3.up * (PlayerArchetype.Height() * 0.8F);
 
-        this.Machine.GetEventRegistry.Event_ActorFoundLedge?.Invoke(hang_position);
+        this.Machine.GetActorEventRegistry.Event_ActorFoundLedge?.Invoke(hang_position);
     }
 
     public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)

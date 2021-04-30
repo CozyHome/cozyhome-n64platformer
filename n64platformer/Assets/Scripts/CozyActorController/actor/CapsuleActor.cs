@@ -91,7 +91,7 @@ namespace com.cozyhome.Actors
             if (_i0 >= 0 && this.DeterminePlaneStability(_internalhits[_i0].normal, _internalhits[_i0].collider))
                 _eflags |= (1 << 1);
 
-            float _ed = VectorHeader.Dot(_velocity, _fp);
+            float _ed = VectorHeader.Dot(velocity, _fp);
 
             if (_eflags != ((1 << 0) | (1 << 1))) // ledge detected & velocity exiting normal dir
             {
@@ -99,7 +99,7 @@ namespace com.cozyhome.Actors
                     return false;
                 else
                 {
-                    VectorHeader.ClipVector(ref _velocity, _u);
+                    VectorHeader.ClipVector(ref velocity, _u);
                     return true;
                 }
             }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using com.cozyhome.Actors;
@@ -8,6 +9,14 @@ public static class PlayerVars
 {
     public const float GRAVITY = 79.68F;
 }
+
+enum JumpType 
+{
+    Default = 0,
+    Wall = 1,
+    Secondary = 2,
+    Tertiary = 3
+};
 
 public class JumpState : ActorState
 {
@@ -23,14 +32,17 @@ public class JumpState : ActorState
     [Header("Animation Curves")]
     [SerializeField] private AnimationCurve FallTimeCurve;
     [SerializeField] private AnimationCurve GravityCurve;
-
+    [SerializeField] private AnimationCurve TurnTimeCurve;
+    [SerializeField] private float MaxRotationSpeed = 360F;
+    [SerializeField] private float MaxMoveInfluence = 10F;
+    [SerializeField] private float MaxHorizontalSpeed = 28F;
 
     private float LastLandTime = 0F;
     private float LastJumpTilt = 0F;
 
     protected override void OnStateInitialize()
     {
-        Machine.GetEventRegistry.Event_ActorLanded += delegate
+        Machine.GetActorEventRegistry.Event_ActorLanded += delegate
         {
             LastLandTime = Time.time;
         };
@@ -40,7 +52,7 @@ public class JumpState : ActorState
     {
         Animator Animator = Machine.GetAnimator;
         ActorHeader.Actor Actor = Machine.GetActor;
-        Vector3 Velocity = Actor._velocity;
+        Vector3 Velocity = Actor.velocity;
 
         InitialSpeed = Mathf.Sqrt(2F * PlayerVars.GRAVITY * JumpHeight);
         Velocity += Vector3.up * InitialSpeed;
@@ -54,16 +66,14 @@ public class JumpState : ActorState
 
         if (Time.time - LastLandTime < 1F)
         {
-            LastJumpTilt++;
-            LastJumpTilt %= 2;
-
-            Animator.SetFloat("Tilt", LastJumpTilt);
+            LastJumpTilt = (LastJumpTilt + 1) % 2;
         }
         else
-            Animator.SetFloat("Tilt", 0F);
+            LastJumpTilt = 0F;
 
+        Animator.SetFloat("Tilt", LastJumpTilt);
         /* notify our callback system */
-        Machine.GetEventRegistry.Event_ActorJumped?.Invoke();
+        Machine.GetActorEventRegistry.Event_ActorJumped?.Invoke();
     }
 
     public override void Exit(ActorState next)
@@ -71,13 +81,34 @@ public class JumpState : ActorState
         Machine.GetActor.SetSnapEnabled(true);
     }
 
+    public void Prepare()
+    {
+    
+    }
+
     public override void Tick(float fdt)
     {
         ActorHeader.Actor Actor = Machine.GetActor;
         PlayerInput PlayerInput = Machine.GetPlayerInput;
+        Transform ModelView = Machine.GetModelView;
+        Transform CameraView = Machine.GetCameraView;
+
+        Vector2 Local = Machine.GetPlayerInput.GetRawMove;
+        Vector3 Move = CameraView.rotation * new Vector3(Local[0], 0F, Local[1]);
+
+        Move[1] = 0F;
+        Move.Normalize();
+
+        Vector3 Velocity = Actor.velocity;
+
+        HoldingJump &= PlayerInput.GetXButton;
+        
+        float gravitational_pull = PlayerVars.GRAVITY;
+        float YComp = Velocity[1];
+        float percent = YComp / InitialSpeed;
 
         /* Continual Ledge Detection  */
-        if (/* only do if falling */ VectorHeader.Dot(Machine.GetActor._velocity, Vector3.up) <= MaxLedgeVelocity &&
+        if (/* only do if falling */ VectorHeader.Dot(Machine.GetActor.velocity, Vector3.up) <= MaxLedgeVelocity &&
             LedgeRegistry.DetectLedge(
             LedgeRegistry.GetProbeDistance,
             Actor._position,
@@ -96,22 +127,31 @@ public class JumpState : ActorState
             return;
         }
 
-        HoldingJump &= PlayerInput.GetXButton;
-
-        Vector3 Velocity = Actor._velocity;
-
-        float gravitational_pull = PlayerVars.GRAVITY;
-        float YComp = Velocity[1];
-        float percent = YComp / InitialSpeed;
-
         if (HoldingJump)
             gravitational_pull = GravityCurve.Evaluate(percent) * PlayerVars.GRAVITY;
 
         Velocity -= Vector3.up * gravitational_pull * fdt;
 
-        Machine.GetAnimator.SetFloat("Time", FallTimeCurve.Evaluate(percent));
+        /* Rotate Towards */
+        if(Move.sqrMagnitude > 0F)
+        {
+            float Turn = TurnTimeCurve.Evaluate(percent);
+
+            ModelView.rotation = Quaternion.RotateTowards(
+                ModelView.rotation, 
+                Quaternion.LookRotation(Move, Vector3.up),
+                Turn * MaxRotationSpeed * fdt);
+
+            Vector3 HorizontalV = Vector3.Scale(Velocity, new Vector3(1F, 0F, 1F));
+            
+            Velocity -= HorizontalV;
+            HorizontalV += Move * (MaxMoveInfluence * Turn * fdt);
+            HorizontalV = Vector3.ClampMagnitude(HorizontalV, MaxHorizontalSpeed);
+            Velocity += HorizontalV;
+        }
 
         Actor.SetVelocity(Velocity);
+        Machine.GetAnimator.SetFloat("Time", FallTimeCurve.Evaluate(percent));
     }
 
     public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)
@@ -120,12 +160,24 @@ public class JumpState : ActorState
     }
     public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
     {
-        if (
-            VectorHeader.Dot(Machine.GetActor.Ground.normal, velocity) < 0F &&
-            VectorHeader.Dot(velocity, trace.normal) <= 0F)
+        /* Ground Transition */
+        if (Machine.ValidGroundTransition(trace.normal, trace.collider))
         {
-            Machine.GetFSM.SwitchState("Ground");
-            Machine.GetAnimator.SetTrigger("Land");
+            Machine.GetFSM.SwitchState(
+                (next) =>
+                {
+                    Machine.GetAnimator.SetTrigger("Land");
+                }, "Ground");
+            return;
+        }
+        else
+        {
+            Machine.GetFSM.SwitchState(
+                (ActorState next) =>
+                {
+                    ((WallSlideState)next).Prepare(trace.normal, velocity);
+                }, "WallSlide");
+            return;
         }
     }
 

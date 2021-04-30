@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,28 +12,23 @@ public class AlignOrbitState : CameraState
 
     private float TurnTime;
     
-    protected override void OnStateInitialize()
-    {
+    protected override void OnStateInitialize() { }
 
-    }
+    public void Prepare() => Machine.ComputeRealignments(ref Initial, ref Final);
 
-    public override void Enter(CameraState prev)
-    {
-        machine.ComputeRealignments(ref Initial, ref Final);
-
-    }
+    public override void Enter(CameraState prev) { }
 
     public override void Exit(CameraState next)
     {
         TurnTime = 0F;
-        machine.ApplyOrbitPosition();
+        Machine.ApplyOrbitPosition();
     }
 
     public override void FixedTick(float fdt)
     {
         if(TurnTime >= MaxTurnTime)
         {
-            machine.GetFSM.SwitchState("Automatic");
+            Machine.GetFSM.SwitchState("Automatic");
             return;
         }
 
@@ -41,7 +37,7 @@ public class AlignOrbitState : CameraState
 
         float rate = EasingCurve.Evaluate(TurnTime / MaxTurnTime);
 
-        machine.SetViewRotation(
+        Machine.SetViewRotation(
             Quaternion.Slerp(
                 Initial,
                 Final,
@@ -49,11 +45,8 @@ public class AlignOrbitState : CameraState
             )
         );
 
-        machine.ApplyOrbitPosition();
+        Machine.ApplyOrbitPosition();
     }
 
-    public override void Tick(float dt)
-    {
-        
-    }
+    public override void Tick(float dt) { }
 }

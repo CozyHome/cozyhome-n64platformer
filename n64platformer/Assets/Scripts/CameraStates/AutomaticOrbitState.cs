@@ -16,14 +16,14 @@ public class AutomaticOrbitState : CameraState
 
     protected override void OnStateInitialize()
     {
-        machine.GetFSM.SetState(this);
+        Machine.GetFSM.SetState(this);
 
-        machine.GetEventRegistry.Event_ActorJumped += delegate 
+        Machine.GetEventRegistry.Event_ActorJumped += delegate
         {
             /* when we jump, automatically do the following:
                set our state to IdleOrbitState (which does nothing but apply position)
             */
-            machine.GetFSM.SwitchState("Idle");
+            Machine.GetFSM.SwitchState("Idle");
         };
     }
 
@@ -35,30 +35,34 @@ public class AutomaticOrbitState : CameraState
     public override void Exit(CameraState next)
     {
         TurnTime = 0F;
-        machine.ApplyOrbitPosition();
+        Machine.ApplyOrbitPosition();
     }
 
     public override void FixedTick(float fdt)
-    {        
+    {
         bool LeftTrigger = PlayerInput.GetLeftTrigger;
-        if(LeftTrigger)
+        if (LeftTrigger)
         {
-            machine.GetFSM.SwitchState("Align");
+            Machine.GetFSM.SwitchState(
+            (CameraState next) =>
+            {
+                ((AlignOrbitState)next).Prepare();
+            }, "Align");
             return;
         }
 
         Vector2 Mouse = PlayerInput.GetRawMouse;
 
-        if(Mouse.sqrMagnitude > 0F) 
+        if (Mouse.sqrMagnitude > 0F)
         {
-            machine.GetFSM.SwitchState("Manual");
+            Machine.GetFSM.SwitchState("Manual");
             return;
         }
 
         Vector2 Move = PlayerInput.GetRawMove;
         Move[1] = 0F;
 
-        if(Move.sqrMagnitude > 0F) 
+        if (Move.sqrMagnitude > 0F)
         {
             TurnTime += fdt;
             TurnTime = Mathf.Min(TurnTime, MaxTurnTime);
@@ -72,8 +76,8 @@ public class AutomaticOrbitState : CameraState
         float rate = EasingCurve.Evaluate(TurnTime / MaxTurnTime);
         rate *= (MaxAutomaticSpeed * fdt);
 
-        machine.OrbitAroundTarget(Move * rate);
-        machine.ApplyOrbitPosition();
+        Machine.OrbitAroundTarget(Move * rate);
+        Machine.ApplyOrbitPosition();
 
     }
 

@@ -29,7 +29,7 @@ public static class ExecutionHeader
                 else
                 {
                     float value = EaseCurve.Evaluate(JumpTime / MaxJumpTime) * BounceHeight;
-                    Middleman.Machine.ApplyOffset(Vector3.up * value);
+                    Middleman.GetMachine.ApplyOffset(Vector3.up * value);
 
                     JumpTime += Middleman.FDT;
                     return true;
@@ -60,12 +60,12 @@ public static class ExecutionHeader
                 if (LedgeTime > MaxLedgeTime)
                     return false;
 
-                Vector3 final = Middleman.Machine.ComputeOrbitPosition(hang_position);
+                Vector3 final = Middleman.GetMachine.ComputeOrbitPosition(hang_position);
                 LedgeTime += Middleman.FDT;
 
                 float percent = LedgeCurve.Evaluate(LedgeTime / MaxLedgeTime);
 
-                Middleman.Machine.SetViewPosition(
+                Middleman.GetMachine.SetViewPosition(
                         Vector3.Lerp(
                             start_position,
                             final,

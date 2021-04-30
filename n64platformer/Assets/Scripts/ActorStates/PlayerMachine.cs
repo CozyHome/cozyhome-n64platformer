@@ -10,23 +10,30 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
     [Header("General References")]
     [SerializeField] private Transform ModelView;
     [SerializeField] private Transform CameraView;
-    [SerializeField] private Animator Animator;
     [SerializeField] private PlayerInput PlayerInput;
 
     private ActorHeader.Actor PlayerActor;
+    private Animator Animator;
     private MonoFSM<string, ActorState> FSM;
 
     [Header("Events & Executions")]
-    private ActorEventRegistry EventRegistry;
+    private ActorEventRegistry ActorEventRegistry;
+    private AnimatorEventRegistry AnimatorEventRegistry;
     [SerializeField] private ActorMiddleman MainMiddleman;
     private ExecutionChain<ExecutionHeader.Actor.ExecutionIndex, ActorMiddleman> MainChain;
     void Start()
     {
+        /* Reference Initialization */
         FSM = new MonoFSM<string, ActorState>();
         MainChain = new ExecutionChain<ExecutionHeader.Actor.ExecutionIndex, ActorMiddleman>(MainMiddleman);
 
-        EventRegistry = GetComponent<ActorEventRegistry>();
         PlayerActor = GetComponent<ActorHeader.Actor>();
+        Animator = GetComponentInChildren<Animator>();
+        
+        ActorEventRegistry = GetComponent<ActorEventRegistry>();
+        AnimatorEventRegistry = GetComponentInChildren<AnimatorEventRegistry>();
+
+        /* State Initialization & Registration */
         ActorState[] tmpbuffer = gameObject.GetComponents<ActorState>();
 
         for (int i = 0; i < tmpbuffer.Length; i++)
@@ -49,25 +56,24 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
     }
 
     public void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)
-    {
-        FSM.Current.OnGroundHit(ground, lastground, layermask);
-    }
+    => FSM.Current.OnGroundHit(ground, lastground, layermask);
 
     public void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
-    {
-        FSM.Current.OnTraceHit(trace, position, velocity);
-    }
+    => FSM.Current.OnTraceHit(trace, position, velocity);
+
+    public bool ValidGroundTransition(Vector3 normal, Collider collider) => PlayerActor.DeterminePlaneStability(normal, collider);
 
     public ExecutionChain<ExecutionHeader.Actor.ExecutionIndex, ActorMiddleman> GetChain => MainChain;
     public MonoFSM<string, ActorState> GetFSM => FSM;
-    public ActorEventRegistry GetEventRegistry => EventRegistry;
+    public ActorEventRegistry GetActorEventRegistry => ActorEventRegistry;
+    public AnimatorEventRegistry GetAnimatorEventRegistry => AnimatorEventRegistry;
 
     public Transform GetModelView => ModelView;
     public Transform GetCameraView => CameraView;
     public Animator GetAnimator => Animator;
     public ActorHeader.Actor GetActor => PlayerActor;
-
     public PlayerInput GetPlayerInput => PlayerInput;
+
 }
 
 [System.Serializable]

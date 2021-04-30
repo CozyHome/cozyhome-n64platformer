@@ -7,9 +7,10 @@ public class IdleOrbitState : CameraState
 
     protected override void OnStateInitialize()
     {
-        machine.GetEventRegistry.Event_ActorLanded += delegate 
+        Machine.GetEventRegistry.Event_ActorLanded += delegate 
         {
-            machine.GetFSM.SwitchState("Automatic");  
+            if(Machine.GetFSM.Current.GetKey == this.GetKey)
+                Machine.GetFSM.SwitchState("Automatic");  
         };
     }
 
@@ -25,7 +26,7 @@ public class IdleOrbitState : CameraState
 
     public override void FixedTick(float fdt)
     {
-        machine.ApplyOrbitPosition();
+        Machine.ApplyOrbitPosition();
     }
 
     public override void Tick(float dt)

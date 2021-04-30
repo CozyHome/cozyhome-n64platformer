@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace com.cozyhome.Archetype
@@ -68,6 +70,41 @@ namespace com.cozyhome.Archetype
 
                     if (_tracelen > 0F &&
                         !_hit.collider.Equals(_self))
+                    {
+                        if (_tracelen < _closestdistance)
+                        {
+                            _closestdistance = _tracelen;
+                            _closestindex = i;
+                        }
+                    }
+                    else
+                    {
+                        nb_found--;
+
+                        if (i < nb_found)
+                            _hits[i] = _hits[nb_found];
+                    }
+                }
+            }
+
+            public static void FindClosestFilterInvalidsList(
+                ref int _tracesfound,
+                out int _closestindex,
+                float _bias,
+                List<Collider> _invalids,
+                RaycastHit[] _hits)
+            {
+                int nb_found = _tracesfound;
+                float _closestdistance = Mathf.Infinity;
+                _closestindex = -1;
+
+                for (int i = nb_found - 1; i >= 0; i--)
+                {
+                    _hits[i].distance -= _bias;
+                    RaycastHit _hit = _hits[i];
+                    float _tracelen = _hit.distance;
+
+                    if (_tracelen > 0F && !_invalids.Contains(_hit.collider))
                     {
                         if (_tracelen < _closestdistance)
                         {

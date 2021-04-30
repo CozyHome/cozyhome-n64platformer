@@ -37,7 +37,7 @@ public class GroundState : ActorState
 
     public override void Enter(ActorState prev)
     {
-        Machine.GetEventRegistry.Event_ActorLanded?.Invoke();
+        Machine.GetActorEventRegistry.Event_ActorLanded?.Invoke();
         TiltLerp = 0F;
     
         Machine.GetAnimator.SetFloat("Time", 0F);
@@ -64,7 +64,7 @@ public class GroundState : ActorState
 
         Quaternion CameraRotation = CameraView.rotation;
         Vector3 Move = CameraRotation * new Vector3(Local[0], 0F, Local[1]);
-        Vector3 Velocity = Actor._velocity;
+        Vector3 Velocity = Actor.velocity;
 
         float JoystickAmount = Local.magnitude;
         float Speed = Velocity.magnitude;

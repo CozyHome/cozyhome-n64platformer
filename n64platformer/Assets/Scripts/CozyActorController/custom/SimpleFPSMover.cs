@@ -56,12 +56,12 @@ namespace com.cozyhome.Debugging
                     _Actor.SetVelocity(_wishvel * _MaxMovementSpeed);
                 }
                 else
-                    _Actor.SetVelocity(_Actor._velocity - Vector3.up * Time.fixedDeltaTime * 39.62F);
+                    _Actor.SetVelocity(_Actor.velocity - Vector3.up * Time.fixedDeltaTime * 39.62F);
 
                 if (_Actor.Ground.stable && Input.GetAxis("Fire1") > 0)
                 {
                     _Actor.SetSnapEnabled(false);
-                    _Actor.SetVelocity(_Actor._velocity + Vector3.up * 10F);
+                    _Actor.SetVelocity(_Actor.velocity + Vector3.up * 10F);
                 }
 
                 ActorHeader.Move(this, _Actor, Time.fixedDeltaTime);

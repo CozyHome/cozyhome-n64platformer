@@ -27,7 +27,7 @@ public class FallState : ActorState
     {
         ActorHeader.Actor Actor = Machine.GetActor;
 
-        Vector3 Velocity = Actor._velocity;
+        Vector3 Velocity = Actor.velocity;
         Velocity -= Vector3.up * (PlayerVars.GRAVITY * fdt);
 
         Actor.SetVelocity(Velocity);
@@ -36,7 +36,7 @@ public class FallState : ActorState
 
     public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)
     {
-        if (VectorHeader.Dot(Machine.GetActor._velocity, ground.normal) < 0F)
+        if (VectorHeader.Dot(Machine.GetActor.velocity, ground.normal) < 0F)
             Machine.GetFSM.SwitchState("Ground");
     }
 

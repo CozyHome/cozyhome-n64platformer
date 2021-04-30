@@ -11,8 +11,10 @@ public class CameraMachine : MonoBehaviour
     [SerializeField] private Transform ViewTransform;
     [SerializeField] private Transform OrbitTransform;
     [SerializeField] private ActorEventRegistry ActorEventRegistry;
+    [SerializeField] private OccludeRegistry OccludeRegistry;
 
     [Header("Target Values")]
+    [SerializeField] private AnimationCurve DistanceCurve;
     [SerializeField] private float DolleyDistance;
     [SerializeField] private float MaxVerticalAngle = 150F;
 
@@ -46,6 +48,7 @@ public class CameraMachine : MonoBehaviour
 
         Middleman.SetFixedDeltaTime(fdt);
         MainChain.FixedTick();
+        SolveOcclusion();
     }
 
     void Update()
@@ -98,17 +101,39 @@ public class CameraMachine : MonoBehaviour
 
     public Vector3 ComputeOrbitPosition()
     {
-        return OrbitTransform.position - (ViewTransform.forward * DolleyDistance) + (Vector3.up * VerticalOffset);
+        float Ratio = Vector3.Dot(
+            ViewTransform.forward,
+            Vector3.up
+        );
+        
+        float Amount = DistanceCurve.Evaluate(Ratio) * DolleyDistance;
+ 
+        return OrbitTransform.position - (ViewTransform.forward * Amount) + (Vector3.up * VerticalOffset);
     }
     public Vector3 ComputeOrbitPosition(Vector3 center)
     {
-        return center - (ViewTransform.forward * DolleyDistance) + (Vector3.up * VerticalOffset);
+        float Ratio = Vector3.Dot(
+            ViewTransform.forward,
+            Vector3.up
+        );
+
+        float Amount = DistanceCurve.Evaluate(Ratio) * DolleyDistance;
+ 
+        return center - (ViewTransform.forward * Amount) + (Vector3.up * VerticalOffset);
     }
 
     public void ApplyOffset(Vector3 offset) => ViewTransform.position += offset;
     public void SetViewPosition(Vector3 position) => ViewTransform.position = position;
     public void SetViewRotation(Quaternion newrotation) => ViewTransform.rotation = newrotation;
     
+    public void SolveOcclusion() 
+    {
+        Vector3 start = OrbitTransform.position + (Vector3.up * VerticalOffset);
+        Vector3 displacement = ViewTransform.position - start;
+        float rto = OccludeRegistry.DetermineOcclusionRatio(start, displacement);
+        ViewTransform.position = start + displacement * rto;
+    }
+
     public void ComputeRealignments(ref Quaternion Initial, ref Quaternion Final)
     {
         Initial = ViewTransform.rotation;
@@ -129,11 +154,11 @@ public abstract class CameraState : MonoBehaviour, MonoFSM<string, CameraState>.
 {
     [SerializeField] private string Key;
 
-    protected CameraMachine machine;
+    protected CameraMachine Machine;
 
     public void Initialize(CameraMachine machine)
     {
-        this.machine = machine;
+        this.Machine = machine;
         machine.GetFSM.AddState(Key, this);
 
         this.OnStateInitialize();
@@ -154,11 +179,11 @@ public abstract class CameraState : MonoBehaviour, MonoFSM<string, CameraState>.
 [System.Serializable]
 public class CameraMiddleman
 {
-    public void SetMachine(CameraMachine machine) => this.machine = machine;
+    public void SetMachine(CameraMachine Machine) => this.Machine = Machine;
     public void SetFixedDeltaTime(float fdt) => this.fdt = fdt;
-    private CameraMachine machine;
+    private CameraMachine Machine;
     private float fdt;
 
-    public CameraMachine Machine => machine;
+    public CameraMachine GetMachine => this.Machine;
     public float FDT => fdt;
 }
