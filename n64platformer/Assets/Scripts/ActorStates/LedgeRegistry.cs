@@ -5,8 +5,16 @@ using com.cozyhome.Archetype;
 using com.cozyhome.Vectors;
 using UnityEngine;
 
+
 public class LedgeRegistry : MonoBehaviour
 {
+    enum LedgeDetectionState 
+    {
+        FoundObstruction = 0,
+        FoundUnstableLedge = 1,
+        FoundStableLedge = 2
+    };
+
     [Header("Ledge Registry References")]
     private RaycastHit[] Internalhits = new RaycastHit[5];
     private Collider[] InternalOverlaps = new Collider[5];
@@ -29,6 +37,17 @@ public class LedgeRegistry : MonoBehaviour
         Quaternion orientation,
         out Vector3 ledge_position)
     {
+        /* 
+        Ledge Algorithm:
+        (1) Trace player forwards into obstruction
+        (2) Trace auxillary line downward inside the bounds of the obstruction's infinite plane
+        (3) If hit point determined:
+            compute height difference from player feet to that of the hit point (dot product)
+            iff height difference is greater than minimum requirements, the step/ledge is valid
+            height difference will always <= MaxLedgeHeight as the linecast offsets from player feet
+        (4) return the new ledge position to caller
+        */
+
         ledge_position = position;
         /* trace from player */
         Archetype.Trace(
@@ -40,8 +59,7 @@ public class LedgeRegistry : MonoBehaviour
             0F,
             QueryTriggerInteraction.Ignore,
             Internalhits,
-            out int traces
-        );
+            out int traces);
 
         ArchetypeHeader.TraceFilters.FindClosestFilterInvalids(
             ref traces,

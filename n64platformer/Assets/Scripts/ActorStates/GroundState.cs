@@ -27,7 +27,7 @@ public class GroundState : ActorState
     [SerializeField] private float MaxMoveSpeed = 20F;
     [SerializeField] private float MoveAcceleration = 30F;
     [SerializeField] private float WalkAcceleration = 10F;
-    
+
     private float TiltLerp = 0F;
 
     protected override void OnStateInitialize()
@@ -38,8 +38,11 @@ public class GroundState : ActorState
     public override void Enter(ActorState prev)
     {
         Machine.GetActorEventRegistry.Event_ActorLanded?.Invoke();
+
         TiltLerp = 0F;
-    
+        Machine.GetAnimator.ResetTrigger("Fall");
+
+        Machine.GetAnimator.SetFloat("Tilt", 0F);
         Machine.GetAnimator.SetFloat("Time", 0F);
     }
 
@@ -47,7 +50,8 @@ public class GroundState : ActorState
     {
         Machine.GetAnimator.speed = 1F;
         TiltLerp = 0F;
-        
+
+        Machine.GetAnimator.ResetTrigger("Land");
         Machine.GetAnimator.SetFloat("Time", 0F);
     }
 
@@ -70,7 +74,7 @@ public class GroundState : ActorState
         float Speed = Velocity.magnitude;
         float Ratio = Speed / MaxMoveSpeed;
         float NewTilt = 0F;
-        
+
         Move[1] = 0F;
         Move.Normalize();
 
@@ -82,7 +86,8 @@ public class GroundState : ActorState
 
         if (XButton)
         {
-            Machine.GetFSM.SwitchState("Jump");
+            Machine.GetFSM.SwitchState(
+                (ActorState next) => { ((JumpState)next).PrepareDefault(); }, "Jump");
             return;
         }
 
@@ -91,7 +96,7 @@ public class GroundState : ActorState
             case WalkType.Idle:
 
                 if (JoystickAmount > 0.125F)
-                     ModelView.rotation = Quaternion.LookRotation(Move, Vector3.up);
+                    ModelView.rotation = Quaternion.LookRotation(Move, Vector3.up);
 
                 Speed -= DeaccelerationCurve.Evaluate(Ratio) * fdt * MoveAcceleration;
                 Speed = Mathf.Max(Speed, 0F);
@@ -111,9 +116,9 @@ public class GroundState : ActorState
 
             case WalkType.Run:
 
-                NewTilt = MoveRotate(Move, RunRotationalCurve.Evaluate(Ratio) * MaxRotateSpeed * fdt);                
+                NewTilt = MoveRotate(Move, RunRotationalCurve.Evaluate(Ratio) * MaxRotateSpeed * fdt);
                 TiltLerp = Mathf.Lerp(TiltLerp, NewTilt, TiltSpeedVelocity * fdt);
-                
+
                 Speed += AccelerationCurve.Evaluate(Ratio) * fdt * MoveAcceleration;
                 Speed = Mathf.Min(Speed, MaxMoveSpeed);
 
@@ -142,7 +147,7 @@ public class GroundState : ActorState
     }
 
     private float MoveRotate(Vector3 move, float rate)
-    {  
+    {
         Quaternion Old = Machine.GetModelView.rotation;
 
         Machine.GetModelView.rotation = Quaternion.RotateTowards(
@@ -165,8 +170,6 @@ public class GroundState : ActorState
     }
 
     public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
-    {
-
-    }
+    { }
 
 }

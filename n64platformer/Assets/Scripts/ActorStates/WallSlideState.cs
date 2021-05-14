@@ -8,6 +8,7 @@ public class WallSlideState : ActorState
     [SerializeField] private float VerticalLossPerSecond = 5F;
     [SerializeField] private float HorizontalLossPerSeccond = 3.5F;
     private Vector3 InitialVelocity;
+    private float RightProduct;
 
     protected override void OnStateInitialize()
     {
@@ -27,9 +28,9 @@ public class WallSlideState : ActorState
 
     public void Prepare(Vector3 wallnormal, Vector3 wallvelocity)
     {
-        float rightproduct = Vector3.SignedAngle(wallnormal, wallvelocity, Vector3.up) >= 0F ? 1F : -1F;
+        RightProduct = Vector3.SignedAngle(wallnormal, wallvelocity, Vector3.up) >= 0F ? 1F : -1F;
         Animator Animator = Machine.GetAnimator;
-        Animator.SetFloat("Tilt", rightproduct);
+        Animator.SetFloat("Tilt", RightProduct);
 
         float wallproduct = VectorHeader.Dot(wallvelocity, wallnormal);
 
@@ -40,7 +41,7 @@ public class WallSlideState : ActorState
         Machine.GetModelView.rotation = Quaternion.LookRotation(wallforward, Vector3.up);
         InitialVelocity = wallvelocity;
 
-        if(InitialVelocity[1] <= 0F)
+        if (InitialVelocity[1] <= 0F)
             InitialVelocity[1] = 1F;
 
         /* somehow apply friction to horizontal velocity..? */
@@ -55,32 +56,55 @@ public class WallSlideState : ActorState
                 }, "Ground");
     }
 
-    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity) { }
+    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
+    {
+        //if (!Machine.GetActor.DetermineGroundStability(velocity, trace, Machine.GetActor.Mask))
+        //    return;
+
+        //Machine.GetFSM.SwitchState(
+        //        (next) =>
+        //        {
+        //            Machine.GetAnimator.SetTrigger("Land");
+        //        }, "Ground");
+    }
 
     public override void Tick(float fdt)
     {
+        LedgeRegistry LedgeRegistry = Machine.GetLedgeRegistry; 
         ActorHeader.Actor Actor = Machine.GetActor;
         Vector3 Velocity = Actor.velocity;
 
         bool XTrigger = Machine.GetPlayerInput.GetXButton;
 
-        if(XTrigger)
+        
+        /* Continual Ledge Detection  */
+        if (LedgeRegistry.DetectLedge(LedgeRegistry.GetProbeDistance,
+            Actor._position,
+            RightProduct * Machine.GetModelView.right,
+            Actor.orientation,
+            out Vector3 ledge_position))
         {
             Machine.GetFSM.SwitchState(
-                (ActorState next) => 
-                { ((JumpState) next).Prepare(); }, "Jump");
+                (ActorState next) =>
+                {
+                    ((LedgeState)next).Prepare(Actor._position, ledge_position);
+                },
+                "Ledge");
+
+            /* attach callback to process setting our initial values on time */
             return;
         }
+
 
         /* Compute Horizontal & Vertical Velocity*/
         Vector3 HorizontalV = Vector3.Scale(Velocity, new Vector3(1F, 0F, 1F));
         Vector3 VerticalV = Velocity - HorizontalV;
 
         HorizontalV *= (1F - (HorizontalLossPerSeccond * fdt));
-        
-        if(VerticalV[1] >= 0F)
+
+        if (VerticalV[1] > 0F)
             VerticalV *= (1F - (VerticalLossPerSecond * fdt));
-        
+
         VerticalV -= Vector3.up * PlayerVars.GRAVITY * GravitationalCurve.Evaluate(VerticalV[1] / InitialVelocity[1]) * fdt;
 
         Actor.SetVelocity(HorizontalV + VerticalV);

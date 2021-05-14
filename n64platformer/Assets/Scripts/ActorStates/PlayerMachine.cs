@@ -11,6 +11,7 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
     [SerializeField] private Transform ModelView;
     [SerializeField] private Transform CameraView;
     [SerializeField] private PlayerInput PlayerInput;
+    [SerializeField] private LedgeRegistry LedgeRegistry;
 
     private ActorHeader.Actor PlayerActor;
     private Animator Animator;
@@ -29,7 +30,7 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
 
         PlayerActor = GetComponent<ActorHeader.Actor>();
         Animator = GetComponentInChildren<Animator>();
-        
+
         ActorEventRegistry = GetComponent<ActorEventRegistry>();
         AnimatorEventRegistry = GetComponentInChildren<AnimatorEventRegistry>();
 
@@ -67,6 +68,8 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
     public MonoFSM<string, ActorState> GetFSM => FSM;
     public ActorEventRegistry GetActorEventRegistry => ActorEventRegistry;
     public AnimatorEventRegistry GetAnimatorEventRegistry => AnimatorEventRegistry;
+
+    public LedgeRegistry GetLedgeRegistry => LedgeRegistry;
 
     public Transform GetModelView => ModelView;
     public Transform GetCameraView => CameraView;

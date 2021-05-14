@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using com.cozyhome.Actors;
 using com.cozyhome.Vectors;
 using UnityEngine;
@@ -10,18 +7,8 @@ public static class PlayerVars
     public const float GRAVITY = 79.68F;
 }
 
-enum JumpType 
-{
-    Default = 0,
-    Wall = 1,
-    Secondary = 2,
-    Tertiary = 3
-};
-
 public class JumpState : ActorState
 {
-    [Header("General References")]
-    [SerializeField] private LedgeRegistry LedgeRegistry;
 
     [Header("Jump Properties")]
     [SerializeField] private float JumpHeight = 4F;
@@ -48,7 +35,11 @@ public class JumpState : ActorState
         };
     }
 
-    public override void Enter(ActorState prev)
+    public override void Enter(ActorState prev) { }
+
+    public override void Exit(ActorState next) { Machine.GetActor.SetSnapEnabled(true); }
+
+    public void PrepareDefault()
     {
         Animator Animator = Machine.GetAnimator;
         ActorHeader.Actor Actor = Machine.GetActor;
@@ -65,29 +56,20 @@ public class JumpState : ActorState
         /* swap jump poses */
 
         if (Time.time - LastLandTime < 1F)
-        {
             LastJumpTilt = (LastJumpTilt + 1) % 2;
-        }
         else
             LastJumpTilt = 0F;
 
         Animator.SetFloat("Tilt", LastJumpTilt);
+
         /* notify our callback system */
         Machine.GetActorEventRegistry.Event_ActorJumped?.Invoke();
-    }
 
-    public override void Exit(ActorState next)
-    {
-        Machine.GetActor.SetSnapEnabled(true);
-    }
-
-    public void Prepare()
-    {
-    
     }
 
     public override void Tick(float fdt)
     {
+        LedgeRegistry LedgeRegistry = Machine.GetLedgeRegistry; 
         ActorHeader.Actor Actor = Machine.GetActor;
         PlayerInput PlayerInput = Machine.GetPlayerInput;
         Transform ModelView = Machine.GetModelView;
@@ -102,15 +84,15 @@ public class JumpState : ActorState
         Vector3 Velocity = Actor.velocity;
 
         HoldingJump &= PlayerInput.GetXButton;
-        
+
         float gravitational_pull = PlayerVars.GRAVITY;
         float YComp = Velocity[1];
         float percent = YComp / InitialSpeed;
 
         /* Continual Ledge Detection  */
-        if (/* only do if falling */ VectorHeader.Dot(Machine.GetActor.velocity, Vector3.up) <= MaxLedgeVelocity &&
-            LedgeRegistry.DetectLedge(
-            LedgeRegistry.GetProbeDistance,
+        if (/* only climb upward if falling */ 
+            VectorHeader.Dot(Machine.GetActor.velocity, Vector3.up) <= MaxLedgeVelocity &&
+            LedgeRegistry.DetectLedge(LedgeRegistry.GetProbeDistance,
             Actor._position,
             Machine.GetModelView.forward,
             Actor.orientation,
@@ -133,17 +115,17 @@ public class JumpState : ActorState
         Velocity -= Vector3.up * gravitational_pull * fdt;
 
         /* Rotate Towards */
-        if(Move.sqrMagnitude > 0F)
+        if (Move.sqrMagnitude > 0F)
         {
             float Turn = TurnTimeCurve.Evaluate(percent);
 
             ModelView.rotation = Quaternion.RotateTowards(
-                ModelView.rotation, 
+                ModelView.rotation,
                 Quaternion.LookRotation(Move, Vector3.up),
                 Turn * MaxRotationSpeed * fdt);
 
             Vector3 HorizontalV = Vector3.Scale(Velocity, new Vector3(1F, 0F, 1F));
-            
+
             Velocity -= HorizontalV;
             HorizontalV += Move * (MaxMoveInfluence * Turn * fdt);
             HorizontalV = Vector3.ClampMagnitude(HorizontalV, MaxHorizontalSpeed);
@@ -172,11 +154,24 @@ public class JumpState : ActorState
         }
         else
         {
-            Machine.GetFSM.SwitchState(
-                (ActorState next) =>
-                {
-                    ((WallSlideState)next).Prepare(trace.normal, velocity);
-                }, "WallSlide");
+            /* We've struck a wall, we need to determine whether or not its safe to climb or not? */
+
+            float XDeviation = Vector3.Angle(Vector3.up, trace.normal);
+            XDeviation = Mathf.Abs(90F - XDeviation); // get angular dif
+
+            if (XDeviation <= 5.0F)
+            {
+                Machine.GetFSM.SwitchState(
+                    (ActorState next) =>
+                    {
+                        ((WallSlideState)next).Prepare(trace.normal, velocity);
+                    }, "WallSlide");
+            }
+            else // not a wall 
+            {
+
+            }
+
             return;
         }
     }

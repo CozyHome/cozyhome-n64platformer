@@ -36,10 +36,19 @@ public class FallState : ActorState
 
     public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)
     {
-        if (VectorHeader.Dot(Machine.GetActor.velocity, ground.normal) < 0F)
-            Machine.GetFSM.SwitchState("Ground");
+
     }
 
     public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
-    { }
+    {
+        if (Machine.ValidGroundTransition(trace.normal, trace.collider))
+        {
+            Machine.GetFSM.SwitchState(
+                (next) =>
+                {
+                    Machine.GetAnimator.SetTrigger("Land");
+                }, "Ground");
+            return;
+        }
+    }
 }
