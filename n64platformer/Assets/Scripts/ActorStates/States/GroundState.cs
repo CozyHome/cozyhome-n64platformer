@@ -40,6 +40,7 @@ public class GroundState : ActorState
         Machine.GetActorEventRegistry.Event_ActorLanded?.Invoke();
 
         TiltLerp = 0F;
+        Machine.GetAnimator.SetTrigger("Land");
         Machine.GetAnimator.ResetTrigger("Fall");
         Machine.GetAnimator.SetFloat("Tilt", 0F);
         Machine.GetAnimator.SetFloat("Time", 0F);

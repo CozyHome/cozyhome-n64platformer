@@ -91,11 +91,7 @@ public class MantleState : ActorState
 
         if (Actor.Ground.stable && AnimationVelocity[1] <= 0F)
         {
-            Machine.GetFSM.SwitchState(
-            (ActorState next) =>
-            {
-                Machine.GetAnimator.SetTrigger("Land");
-            }, "Ground");
+            Machine.GetFSM.SwitchState("Ground");
         }
     }
 

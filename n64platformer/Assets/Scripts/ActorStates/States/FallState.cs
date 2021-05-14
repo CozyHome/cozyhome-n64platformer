@@ -34,6 +34,11 @@ public class FallState : ActorState
             LedgeRegistry,
             Machine))
             return;
+        else if(Actor.Ground.stable)
+        {
+            Machine.GetFSM.SwitchState("Ground");
+            return;
+        }
         else
         {
             Velocity -= Vector3.up * (PlayerVars.GRAVITY * fdt);
@@ -45,14 +50,5 @@ public class FallState : ActorState
 
     public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
     {
-        if (Machine.ValidGroundTransition(trace.normal, trace.collider))
-        {
-            Machine.GetFSM.SwitchState(
-                (next) =>
-                {
-                    Machine.GetAnimator.SetTrigger("Land");
-                }, "Ground");
-            return;
-        }
     }
 }

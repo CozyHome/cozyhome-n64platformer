@@ -4,14 +4,15 @@ using UnityEngine;
 public class WallJumpState : ActorState
 {
     [SerializeField] private float JumpHeight = 5F;
+    [SerializeField] private float ForwardJumpSpeed = 10F;
 
-    public void Prepare()
+    public void Prepare(Vector3 Normal)
     {
         Transform ModelView = Machine.GetModelView;
         ActorHeader.Actor Actor = Machine.GetActor;
         Animator Animator = Machine.GetAnimator;
 
-        Vector3 Velocity = Vector3.zero;
+        Vector3 Velocity = (Normal * ForwardJumpSpeed) + Vector3.up * Mathf.Sqrt(2F * JumpHeight * PlayerVars.GRAVITY);
 
         /* Construct our Initial Velocity for our jump: */
 

@@ -18,7 +18,7 @@ public static class ActorStateHeader
                 LedgeRegistry.GetProbeDistance,
                 out LedgeRegistry.LedgeHit ledgehit);
 
-            return CheckSwitchToLedge(Position, Machine, ledgehit);
+            return CheckSwitchToLedge(Position, Machine, ledgehit) || CheckSwitchToSlide(Position, Machine, ledgehit);
         }
 
         public static bool CheckSlideTransitions(Vector3 Position,
@@ -56,9 +56,27 @@ public static class ActorStateHeader
                 return false;
         }
 
+        private static bool CheckSwitchToSlide(Vector3 Position, PlayerMachine Machine, LedgeRegistry.LedgeHit ledgehit)
+        {
+            bool IsBlockingWall = ledgehit.AuxillaryDelta[0] >= -0.125F && ledgehit.IsBlocking && !(ledgehit.IsLedge);
+
+            if (IsBlockingWall)
+            {
+                Machine.GetFSM.SwitchState(
+                    (ActorState next) =>
+                    {
+                        ((WallSlideState)next).Prepare(ledgehit.LedgePlanarNormal, Machine.GetModelView.forward);
+                    }, "WallSlide");
+
+                return true;
+            }
+            else
+                return false;
+        }
+
         private static bool CheckSwitchToFall(Vector3 Position, PlayerMachine Machine, LedgeRegistry.LedgeHit ledgehit)
         {
-            if (!ledgehit.IsHit)
+            if (!ledgehit.IsHit || ledgehit.IsSafe)
             {
                 Machine.GetFSM.SwitchState("Fall");
                 return true;

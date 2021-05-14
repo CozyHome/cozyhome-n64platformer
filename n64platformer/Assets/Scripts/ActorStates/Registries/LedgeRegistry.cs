@@ -134,11 +134,14 @@ public class LedgeRegistry : MonoBehaviour
         Quaternion orientation,
         ref LedgeHit ledgehit)
     {
-        const float min_hoffset = 0.1F, min_voffset = 0.1F, min_correlation = 0.1F;
+        const float min_hoffset = 0.1F, min_voffset = 0.1F, min_correlation = 0.025F;
 
         /* is our primitive trace really hitting a wall, or is it a ceiling/slope? */
         if (VectorHeader.Dot(normal, Vector3.up) < min_correlation)
         {
+            ledgehit.AuxillaryDelta[0] = -dist;
+            ledgehit.LedgePlanarNormal = normal;
+
             /* Obstruction in Primitive Trace */
             ledgehit.LedgeStatus |= BLOCKING_PRIMITIVE_LEDGETRACE;
 
@@ -177,13 +180,10 @@ public class LedgeRegistry : MonoBehaviour
 
                 ledgehit.LedgeStatus |= VALID_LINE_LEDGETRACE;
 
-                ledgehit.AuxillaryDelta[0] = -dist;
-
                 ledgehit.LedgeDelta[0] = -(min_hoffset) + ledgehit.AuxillaryDelta[0];
                 ledgehit.LedgeDelta[1] = (height + min_voffset);
 
                 ledgehit.LedgeUpwardNormal = floorinfo.normal;
-                ledgehit.LedgePlanarNormal = normal;
 
                 /* determining if our floor hit is tall enough to constitute a ledge. */
                 /* determining if our floor hit is actually stable/perpendicular to us. */

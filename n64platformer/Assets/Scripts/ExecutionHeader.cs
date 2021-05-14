@@ -38,47 +38,43 @@ public static class ExecutionHeader
         }
 
         [System.Serializable]
-        public class OnLedgeExecution : ExecutionChain<int, CameraMiddleman>.Execution
+        public class OnHangExecution : ExecutionChain<int, CameraMiddleman>.Execution
         {
-            [Header("Animation Curves")]
-            [SerializeField] private AnimationCurve LedgeCurve;
-            [SerializeField] private float MaxLedgeTime;
-            private Vector3 hang_position, start_position;
-            private float LedgeTime;
+            [SerializeField] private AnimationCurve EaseCurve;
+            [SerializeField] private Vector3 InitialPosition, HangPosition;
+            [SerializeField] private float MaxHangTime = 1.0F;
+            private float HangTime = 0.0F;
+            
+            public void Prepare(CameraMiddleman Middleman, Vector3 hang_position)
+            {
+                /* get our transform target location */    
+                InitialPosition = Middleman.GetMachine.ViewPosition;
+            }
             
             public override void Enter(CameraMiddleman Middleman)
-            {
-                LedgeTime = 0F;
+            { 
+                HangTime = 0.0F;
             }
             public override void Exit(CameraMiddleman Middleman)
             {
-                LedgeTime = 0F;
+                HangTime = 0.0F;
             }
 
             public override bool Execute(CameraMiddleman Middleman)
             {
-                if (LedgeTime > MaxLedgeTime)
+                if(HangTime >= MaxHangTime)
                     return false;
+                else 
+                {
+                    float Amount = EaseCurve.Evaluate(HangTime / MaxHangTime);
+                    Middleman.GetMachine.SetViewPosition(
+                        Vector3.Lerp(InitialPosition,
+                            Middleman.GetMachine.ViewPosition,
+                            Amount));
 
-                Vector3 final = Middleman.GetMachine.ComputeOrbitPosition(hang_position);
-                LedgeTime += Middleman.FDT;
-
-                float percent = LedgeCurve.Evaluate(LedgeTime / MaxLedgeTime);
-
-                Middleman.GetMachine.SetViewPosition(
-                        Vector3.Lerp(
-                            start_position,
-                            final,
-                            percent)
-                    );
-
-                return true;
-            }
-
-            public void Prepare(Vector3 start_position, Vector3 hang_position)
-            {
-                this.start_position = start_position;
-                this.hang_position = hang_position;
+                    HangTime += Middleman.FDT;
+                    return true;
+                }
             }
         }
 

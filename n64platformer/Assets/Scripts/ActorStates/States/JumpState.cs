@@ -136,17 +136,14 @@ public class JumpState : ActorState
         /* Ground Transition */
         if (Machine.ValidGroundTransition(trace.normal, trace.collider))
         {
-            Machine.GetFSM.SwitchState(
-                (next) =>
-                {
-                    Machine.GetAnimator.SetTrigger("Land");
-                }, "Ground");
+            Machine.GetFSM.SwitchState("Ground");
             return;
         }
         else
         {
             /* We've struck a wall, we need to determine whether or not its safe to climb or not? */
 
+            /*
             float XDeviation = Vector3.Angle(Vector3.up, trace.normal);
             XDeviation = Mathf.Abs(90F - XDeviation); // get angular dif
 
@@ -164,6 +161,7 @@ public class JumpState : ActorState
             }
 
             return;
+            */
         }
     }
 

@@ -132,9 +132,9 @@ namespace com.cozyhome.Archetype
 
         private static readonly float[] SKINEPSILON = new float[3]
         {
-            0.001F, // sphere
-            0.001F, // capsule
-            0.001F // box
+            0.002F, // sphere
+            0.002F, // capsule
+            0.002F // box
         };
 
         private static readonly float[] TRACEBIAS = new float[4]

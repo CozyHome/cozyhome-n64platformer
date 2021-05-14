@@ -24,7 +24,7 @@ public class CameraMachine : MonoBehaviour
     private ExecutionChain<int, CameraMiddleman> MainChain;
 
     [SerializeField] private ExecutionHeader.Camera.OnJumpExecution JumpExecution;
-    [SerializeField] private ExecutionHeader.Camera.OnLedgeExecution LedgeExecution;
+    [SerializeField] private ExecutionHeader.Camera.OnHangExecution HangExecution;
 
     public float VerticalOffset = 4F;
 
@@ -60,21 +60,22 @@ public class CameraMachine : MonoBehaviour
     {
         Middleman.SetMachine(this);
 
-        GetEventRegistry.Event_ActorJumped += delegate
+        GetEventRegistry.Event_ActorJumped += () =>
         {
             MainChain.AddExecution(JumpExecution);
         };
 
-        GetEventRegistry.Event_ActorFoundLedge += (Vector3 hang_position) =>
+        GetEventRegistry.Event_ActorFoundLedge += (Vector3 hang_position) => 
         {
-            LedgeExecution.Prepare(ViewTransform.position, hang_position);
-            MainChain.AddExecution(LedgeExecution);
-            FSM.SwitchState("Manual");
+            HangExecution.Prepare(Middleman, hang_position);
+            MainChain.AddExecution(HangExecution);
         };
     }
 
     public MonoFSM<string, CameraState> GetFSM => FSM;
     public ActorEventRegistry GetEventRegistry => ActorEventRegistry;
+
+    public Vector3 ViewPosition => ViewTransform.position;
 
     public void OrbitAroundTarget(Vector2 Input)
     {
@@ -101,25 +102,10 @@ public class CameraMachine : MonoBehaviour
 
     public Vector3 ComputeOrbitPosition()
     {
-        float Ratio = Vector3.Dot(
-            ViewTransform.forward,
-            Vector3.up
-        );
-        
+        float Ratio = Vector3.Dot( ViewTransform.forward, Vector3.up);
         float Amount = DistanceCurve.Evaluate(Ratio) * DolleyDistance;
  
         return OrbitTransform.position - (ViewTransform.forward * Amount) + (Vector3.up * VerticalOffset);
-    }
-    public Vector3 ComputeOrbitPosition(Vector3 center)
-    {
-        float Ratio = Vector3.Dot(
-            ViewTransform.forward,
-            Vector3.up
-        );
-
-        float Amount = DistanceCurve.Evaluate(Ratio) * DolleyDistance;
- 
-        return center - (ViewTransform.forward * Amount) + (Vector3.up * VerticalOffset);
     }
 
     public void ApplyOffset(Vector3 offset) => ViewTransform.position += offset;

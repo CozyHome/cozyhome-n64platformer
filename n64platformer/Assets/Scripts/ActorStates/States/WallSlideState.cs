@@ -18,7 +18,11 @@ public class WallSlideState : ActorState
         Animator.SetTrigger("Slide");
     }
 
-    public override void Exit(ActorState next) { }
+    public override void Exit(ActorState next)
+    {
+        Animator Animator = Machine.GetAnimator;
+        Animator.ResetTrigger("Slide");
+    }
 
     public void Prepare(Vector3 wallnormal, Vector3 wallvelocity)
     {
@@ -28,8 +32,12 @@ public class WallSlideState : ActorState
 
         float wallproduct = VectorHeader.Dot(wallvelocity, wallnormal);
 
-        Vector3 wallforward = wallvelocity - (wallnormal * wallproduct);
+        Vector3 wallforward = wallvelocity;
+
+        if (wallproduct <= 0.995F)
+            wallforward -= (wallnormal * wallproduct);
         wallforward[1] = 0F;
+
         wallforward.Normalize();
 
         Machine.GetModelView.rotation = Quaternion.LookRotation(wallforward, Vector3.up);
@@ -43,11 +51,7 @@ public class WallSlideState : ActorState
 
     public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)
     {
-        Machine.GetFSM.SwitchState(
-                (next) =>
-                {
-                    Machine.GetAnimator.SetTrigger("Land");
-                }, "Ground");
+
     }
 
     public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity) { }
@@ -68,6 +72,19 @@ public class WallSlideState : ActorState
             LedgeRegistry,
             Machine))
             return;
+        else if (Actor.Ground.stable)
+        {
+            Machine.GetFSM.SwitchState("Ground");
+            return;
+        }
+        else if (XTrigger)
+        {
+            Machine.GetFSM.SwitchState(
+            (ActorState next) =>
+            {
+                ((WallJumpState)next).Prepare(-RightProduct * Machine.GetModelView.right);
+            }, "WallJump");
+        }
         else
         {
             /* Compute Horizontal & Vertical Velocity*/
@@ -76,8 +93,8 @@ public class WallSlideState : ActorState
 
             HorizontalV *= (1F - (HorizontalLossPerSeccond * fdt));
 
-            if (VerticalV[1] > 0F)
-                VerticalV *= (1F - (VerticalLossPerSecond * fdt));
+            //if (VerticalV[1] >= InitialVelocity[1] * 0.75F)
+            //    VerticalV *= (1F - (VerticalLossPerSecond * fdt));
 
             VerticalV -= Vector3.up * PlayerVars.GRAVITY * GravitationalCurve.Evaluate(VerticalV[1] / InitialVelocity[1]) * fdt;
 
