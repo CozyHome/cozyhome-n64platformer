@@ -102,7 +102,7 @@ namespace com.cozyhome.Actors
 
             [System.NonSerialized] protected readonly Vector3[] _internalnormals = new Vector3[ActorHeader.MAX_OVERLAPS];
 
-            [System.NonSerialized] public Vector3 _position;
+            [System.NonSerialized] public Vector3 position;
             [System.NonSerialized] public Vector3 velocity;
             [System.NonSerialized] public Quaternion orientation;
 
@@ -127,7 +127,7 @@ namespace com.cozyhome.Actors
             public static void Noclip(IActorReceiver receiver, Actor actor, float fdt) => PM_NoclipMove(receiver, actor, fdt);
 
             public void SetVelocity(Vector3 velocity) => this.velocity = velocity;
-            public void SetPosition(Vector3 position) => this._position = position;
+            public void SetPosition(Vector3 position) => this.position = position;
             public void SetOrientation(Quaternion orientation) => this.orientation = orientation;
             public void SetMoveType(MoveType movetype) => this.MoveType = movetype;
             public void SetSnapType(SlideSnapType snaptype) => this.SnapType = snaptype;
@@ -178,7 +178,7 @@ namespace com.cozyhome.Actors
             */
 
             /* actor transform values */
-            Vector3 position = actor._position;
+            Vector3 position = actor.position;
             Vector3 velocity = actor.velocity;
             Quaternion orientation = actor.orientation;
 
@@ -377,7 +377,7 @@ namespace com.cozyhome.Actors
             */
 
             /* actor transform values */
-            Vector3 position = actor._position;
+            Vector3 position = actor.position;
             Vector3 velocity = actor.velocity;
             Quaternion orientation = actor.orientation;
 
@@ -859,7 +859,7 @@ namespace com.cozyhome.Actors
             */
 
             /* actor transform values */
-            Vector3 position = actor._position;
+            Vector3 position = actor.position;
             Vector3 velocity = actor.velocity;
             Quaternion orientation = actor.orientation;
 
@@ -1410,7 +1410,7 @@ namespace com.cozyhome.Actors
             actor.Ground.Clear();
             actor.LastGround.Clear();
 
-            actor.SetPosition(actor._position + actor.velocity * fdt);
+            actor.SetPosition(actor.position + actor.velocity * fdt);
         }
 
 

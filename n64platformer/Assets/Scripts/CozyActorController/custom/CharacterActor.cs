@@ -19,7 +19,7 @@ public class CharacterActor : MonoBehaviour, ActorHeader.IActorReceiver
     
         ActorHeader.Move(this, Actor, fdt);
     
-        transform.SetPositionAndRotation(Actor._position, Actor.orientation);
+        transform.SetPositionAndRotation(Actor.position, Actor.orientation);
     }
 
     public void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)

@@ -10,10 +10,7 @@ public class WallSlideState : ActorState
     private Vector3 InitialVelocity;
     private float RightProduct;
 
-    protected override void OnStateInitialize()
-    {
-
-    }
+    protected override void OnStateInitialize() { }
 
     public override void Enter(ActorState prev)
     {
@@ -21,10 +18,7 @@ public class WallSlideState : ActorState
         Animator.SetTrigger("Slide");
     }
 
-    public override void Exit(ActorState next)
-    {
-
-    }
+    public override void Exit(ActorState next) { }
 
     public void Prepare(Vector3 wallnormal, Vector3 wallvelocity)
     {
@@ -56,57 +50,40 @@ public class WallSlideState : ActorState
                 }, "Ground");
     }
 
-    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
-    {
-        //if (!Machine.GetActor.DetermineGroundStability(velocity, trace, Machine.GetActor.Mask))
-        //    return;
-
-        //Machine.GetFSM.SwitchState(
-        //        (next) =>
-        //        {
-        //            Machine.GetAnimator.SetTrigger("Land");
-        //        }, "Ground");
-    }
+    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity) { }
 
     public override void Tick(float fdt)
     {
-        LedgeRegistry LedgeRegistry = Machine.GetLedgeRegistry; 
+        LedgeRegistry LedgeRegistry = Machine.GetLedgeRegistry;
         ActorHeader.Actor Actor = Machine.GetActor;
         Vector3 Velocity = Actor.velocity;
 
         bool XTrigger = Machine.GetPlayerInput.GetXButton;
 
-        
         /* Continual Ledge Detection  */
-        if (LedgeRegistry.DetectLedge(LedgeRegistry.GetProbeDistance,
-            Actor._position,
+        if (ActorStateHeader.Transitions.CheckSlideTransitions(
+            Actor.position,
             RightProduct * Machine.GetModelView.right,
             Actor.orientation,
-            out Vector3 ledge_position))
-        {
-            Machine.GetFSM.SwitchState(
-                (ActorState next) =>
-                {
-                    ((LedgeState)next).Prepare(Actor._position, ledge_position);
-                },
-                "Ledge");
-
-            /* attach callback to process setting our initial values on time */
+            LedgeRegistry,
+            Machine))
             return;
+        else
+        {
+            /* Compute Horizontal & Vertical Velocity*/
+            Vector3 HorizontalV = Vector3.Scale(Velocity, new Vector3(1F, 0F, 1F));
+            Vector3 VerticalV = Velocity - HorizontalV;
+
+            HorizontalV *= (1F - (HorizontalLossPerSeccond * fdt));
+
+            if (VerticalV[1] > 0F)
+                VerticalV *= (1F - (VerticalLossPerSecond * fdt));
+
+            VerticalV -= Vector3.up * PlayerVars.GRAVITY * GravitationalCurve.Evaluate(VerticalV[1] / InitialVelocity[1]) * fdt;
+
+            Actor.SetVelocity(HorizontalV + VerticalV);
+
         }
-
-
-        /* Compute Horizontal & Vertical Velocity*/
-        Vector3 HorizontalV = Vector3.Scale(Velocity, new Vector3(1F, 0F, 1F));
-        Vector3 VerticalV = Velocity - HorizontalV;
-
-        HorizontalV *= (1F - (HorizontalLossPerSeccond * fdt));
-
-        if (VerticalV[1] > 0F)
-            VerticalV *= (1F - (VerticalLossPerSecond * fdt));
-
-        VerticalV -= Vector3.up * PlayerVars.GRAVITY * GravitationalCurve.Evaluate(VerticalV[1] / InitialVelocity[1]) * fdt;
-
-        Actor.SetVelocity(HorizontalV + VerticalV);
     }
+
 }

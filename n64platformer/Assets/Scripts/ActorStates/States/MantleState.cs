@@ -24,7 +24,7 @@ public class MantleState : ActorState
     public void Prepare(Vector3 hang_position, Vector3 mantle_position) /* Called when player presses XButton in LedgeState */
     {
         Displacement = mantle_position - hang_position;
-        MantleType = MantleType.Slow;
+        MantleType = MantleType.Fast;
     }
 
     protected override void OnStateInitialize()

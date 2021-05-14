@@ -53,7 +53,7 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
         MainMiddleman.SetFixedDeltaTime(Time.fixedDeltaTime);
         MainChain.FixedTick();
 
-        transform.SetPositionAndRotation(PlayerActor._position, PlayerActor.orientation);
+        transform.SetPositionAndRotation(PlayerActor.position, PlayerActor.orientation);
     }
 
     public void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)

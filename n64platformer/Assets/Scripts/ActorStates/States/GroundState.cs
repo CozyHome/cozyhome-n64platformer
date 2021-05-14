@@ -41,7 +41,6 @@ public class GroundState : ActorState
 
         TiltLerp = 0F;
         Machine.GetAnimator.ResetTrigger("Fall");
-
         Machine.GetAnimator.SetFloat("Tilt", 0F);
         Machine.GetAnimator.SetFloat("Time", 0F);
     }
@@ -50,9 +49,9 @@ public class GroundState : ActorState
     {
         Machine.GetAnimator.speed = 1F;
         TiltLerp = 0F;
-
         Machine.GetAnimator.ResetTrigger("Land");
         Machine.GetAnimator.SetFloat("Time", 0F);
+
     }
 
     public override void Tick(float fdt)
@@ -78,18 +77,8 @@ public class GroundState : ActorState
         Move[1] = 0F;
         Move.Normalize();
 
-        if (!Actor.Ground.stable)
-        {
-            Machine.GetFSM.SwitchState("Fall");
+        if (DetermineTransitions(XButton, Actor))
             return;
-        }
-
-        if (XButton)
-        {
-            Machine.GetFSM.SwitchState(
-                (ActorState next) => { ((JumpState)next).PrepareDefault(); }, "Jump");
-            return;
-        }
 
         switch (GetWalkType(JoystickAmount))
         {
@@ -136,15 +125,33 @@ public class GroundState : ActorState
         Animator.SetFloat("Speed", Speed / MaxMoveSpeed);
     }
 
-    private WalkType GetWalkType(float amount)
+    private bool DetermineTransitions(bool XButton, ActorHeader.Actor Actor)
     {
-        if (amount <= 0.25F)
-            return WalkType.Idle;
-        else if (amount < 0.45F)
-            return WalkType.Walk;
-        else
-            return WalkType.Run;
+        if (!Actor.Ground.stable)
+        {
+            Machine.GetFSM.SwitchState("Fall");
+            return true;
+        }
+
+        if (XButton)
+        {
+            Machine.GetFSM.SwitchState(
+                (ActorState next) =>
+                {
+                    ((JumpState)next).PrepareDefault();
+                }, "Jump");
+
+            return true;
+        }
+
+        return false;
     }
+
+    public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)
+    { }
+
+    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
+    { }
 
     private float MoveRotate(Vector3 move, float rate)
     {
@@ -164,12 +171,14 @@ public class GroundState : ActorState
         return YAngle * TiltSpeedAmount;
     }
 
-    public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)
+    private WalkType GetWalkType(float amount)
     {
-
+        if (amount <= 0.25F)
+            return WalkType.Idle;
+        else if (amount < 0.45F)
+            return WalkType.Walk;
+        else
+            return WalkType.Run;
     }
-
-    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
-    { }
 
 }

@@ -6,10 +6,7 @@ using UnityEngine;
 
 public class FallState : ActorState
 {
-    protected override void OnStateInitialize()
-    {
-
-    }
+    protected override void OnStateInitialize() { }
 
     public override void Enter(ActorState prev)
     {
@@ -19,25 +16,32 @@ public class FallState : ActorState
 
     public override void Exit(ActorState next)
     {
-        Machine.GetAnimator.SetTrigger("Land");
         Machine.GetActor.SetSnapEnabled(true);
     }
 
     public override void Tick(float fdt)
     {
+        LedgeRegistry LedgeRegistry = Machine.GetLedgeRegistry;
         ActorHeader.Actor Actor = Machine.GetActor;
-
+        Transform ModelView = Machine.GetModelView;
         Vector3 Velocity = Actor.velocity;
-        Velocity -= Vector3.up * (PlayerVars.GRAVITY * fdt);
 
-        Actor.SetVelocity(Velocity);
+        /* Continual Ledge Detection  */
+        if (ActorStateHeader.Transitions.CheckGeneralLedgeTransition(
+            Actor.position,
+            ModelView.forward,
+            Actor.orientation,
+            LedgeRegistry,
+            Machine))
+            return;
+        else
+        {
+            Velocity -= Vector3.up * (PlayerVars.GRAVITY * fdt);
+            Actor.SetVelocity(Velocity);
+        }
     }
 
-
-    public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)
-    {
-
-    }
+    public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask) { }
 
     public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
     {

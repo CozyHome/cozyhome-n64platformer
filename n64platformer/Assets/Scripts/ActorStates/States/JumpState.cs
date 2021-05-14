@@ -69,7 +69,7 @@ public class JumpState : ActorState
 
     public override void Tick(float fdt)
     {
-        LedgeRegistry LedgeRegistry = Machine.GetLedgeRegistry; 
+        LedgeRegistry LedgeRegistry = Machine.GetLedgeRegistry;
         ActorHeader.Actor Actor = Machine.GetActor;
         PlayerInput PlayerInput = Machine.GetPlayerInput;
         Transform ModelView = Machine.GetModelView;
@@ -90,50 +90,41 @@ public class JumpState : ActorState
         float percent = YComp / InitialSpeed;
 
         /* Continual Ledge Detection  */
-        if (/* only climb upward if falling */ 
-            VectorHeader.Dot(Machine.GetActor.velocity, Vector3.up) <= MaxLedgeVelocity &&
-            LedgeRegistry.DetectLedge(LedgeRegistry.GetProbeDistance,
-            Actor._position,
-            Machine.GetModelView.forward,
+        if (ActorStateHeader.Transitions.CheckGeneralLedgeTransition(
+            Actor.position,
+            ModelView.forward,
             Actor.orientation,
-            out Vector3 ledge_position))
-        {
-            Machine.GetFSM.SwitchState(
-                (ActorState next) =>
-                {
-                    ((LedgeState)next).Prepare(Actor._position, ledge_position);
-                },
-                "Ledge");
-
-            /* attach callback to process setting our initial values on time */
+            LedgeRegistry,
+            Machine))
             return;
-        }
-
-        if (HoldingJump)
-            gravitational_pull = GravityCurve.Evaluate(percent) * PlayerVars.GRAVITY;
-
-        Velocity -= Vector3.up * gravitational_pull * fdt;
-
-        /* Rotate Towards */
-        if (Move.sqrMagnitude > 0F)
+        else
         {
-            float Turn = TurnTimeCurve.Evaluate(percent);
+            if (HoldingJump)
+                gravitational_pull = GravityCurve.Evaluate(percent) * PlayerVars.GRAVITY;
 
-            ModelView.rotation = Quaternion.RotateTowards(
-                ModelView.rotation,
-                Quaternion.LookRotation(Move, Vector3.up),
-                Turn * MaxRotationSpeed * fdt);
+            Velocity -= Vector3.up * gravitational_pull * fdt;
 
-            Vector3 HorizontalV = Vector3.Scale(Velocity, new Vector3(1F, 0F, 1F));
+            /* Rotate Towards */
+            if (Move.sqrMagnitude > 0F)
+            {
+                float Turn = TurnTimeCurve.Evaluate(percent);
 
-            Velocity -= HorizontalV;
-            HorizontalV += Move * (MaxMoveInfluence * Turn * fdt);
-            HorizontalV = Vector3.ClampMagnitude(HorizontalV, MaxHorizontalSpeed);
-            Velocity += HorizontalV;
+                ModelView.rotation = Quaternion.RotateTowards(
+                    ModelView.rotation,
+                    Quaternion.LookRotation(Move, Vector3.up),
+                    Turn * MaxRotationSpeed * fdt);
+
+                Vector3 HorizontalV = Vector3.Scale(Velocity, new Vector3(1F, 0F, 1F));
+
+                Velocity -= HorizontalV;
+                HorizontalV += Move * (MaxMoveInfluence * Turn * fdt);
+                HorizontalV = Vector3.ClampMagnitude(HorizontalV, MaxHorizontalSpeed);
+                Velocity += HorizontalV;
+            }
+
+            Actor.SetVelocity(Velocity);
+            Machine.GetAnimator.SetFloat("Time", FallTimeCurve.Evaluate(percent));
         }
-
-        Actor.SetVelocity(Velocity);
-        Machine.GetAnimator.SetFloat("Time", FallTimeCurve.Evaluate(percent));
     }
 
     public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)

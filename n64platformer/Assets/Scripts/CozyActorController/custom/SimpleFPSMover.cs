@@ -20,7 +20,7 @@ namespace com.cozyhome.Debugging
                 return;
             else
             {
-                _Actor._position = transform.position;
+                _Actor.position = transform.position;
 
                 Vector2 _mouse = new Vector2(
                     Input.GetAxisRaw("Mouse X"),
@@ -66,7 +66,7 @@ namespace com.cozyhome.Debugging
 
                 ActorHeader.Move(this, _Actor, Time.fixedDeltaTime);
 
-                transform.position = _Actor._position;
+                transform.position = _Actor.position;
             }
         }
 
