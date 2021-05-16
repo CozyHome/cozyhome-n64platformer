@@ -5,7 +5,6 @@ using UnityEngine;
 public class WallSlideState : ActorState
 {
     [SerializeField] private AnimationCurve GravitationalCurve;
-    [SerializeField] private float VerticalLossPerSecond = 5F;
     [SerializeField] private float HorizontalLossPerSeccond = 3.5F;
     private Vector3 InitialVelocity;
     private float RightProduct;
@@ -22,6 +21,11 @@ public class WallSlideState : ActorState
     {
         Animator Animator = Machine.GetAnimator;
         Animator.ResetTrigger("Slide");
+    
+        if(next.GetKey == "Fall") 
+        {
+            Machine.GetModelView.rotation *= Quaternion.AngleAxis(90F * RightProduct, Vector3.up);
+        }
     }
 
     public void Prepare(Vector3 wallnormal, Vector3 wallvelocity)
@@ -34,8 +38,11 @@ public class WallSlideState : ActorState
 
         Vector3 wallforward = wallvelocity;
 
-        if (wallproduct <= 0.995F)
+        if (Mathf.Abs(wallproduct) <= 0.9F)
             wallforward -= (wallnormal * wallproduct);
+        else
+            wallforward = Quaternion.AngleAxis(RightProduct * 90F, Vector3.up) * wallnormal;
+
         wallforward[1] = 0F;
 
         wallforward.Normalize();
@@ -62,7 +69,7 @@ public class WallSlideState : ActorState
         ActorHeader.Actor Actor = Machine.GetActor;
         Vector3 Velocity = Actor.velocity;
 
-        bool XTrigger = Machine.GetPlayerInput.GetXButton;
+        bool XTrigger = Machine.GetPlayerInput.GetXTrigger;
 
         /* Continual Ledge Detection  */
         if (ActorStateHeader.Transitions.CheckSlideTransitions(
@@ -93,14 +100,13 @@ public class WallSlideState : ActorState
 
             HorizontalV *= (1F - (HorizontalLossPerSeccond * fdt));
 
-            //if (VerticalV[1] >= InitialVelocity[1] * 0.75F)
-            //    VerticalV *= (1F - (VerticalLossPerSecond * fdt));
-
             VerticalV -= Vector3.up * PlayerVars.GRAVITY * GravitationalCurve.Evaluate(VerticalV[1] / InitialVelocity[1]) * fdt;
+
+            if (VerticalV[1] <= -8.0F)
+                VerticalV[1] *= (-8.0F / VerticalV[1]);
 
             Actor.SetVelocity(HorizontalV + VerticalV);
 
         }
     }
-
 }

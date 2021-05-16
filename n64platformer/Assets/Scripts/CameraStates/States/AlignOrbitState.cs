@@ -41,8 +41,7 @@ public class AlignOrbitState : CameraState
             Quaternion.Slerp(
                 Initial,
                 Final,
-                rate
-            )
+                rate)
         );
 
         Machine.ApplyOrbitPosition();

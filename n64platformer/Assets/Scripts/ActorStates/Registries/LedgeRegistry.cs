@@ -92,12 +92,13 @@ public class LedgeRegistry : MonoBehaviour
 
         ledgehit = new LedgeHit();
         ledgehit.Clear();
+        float skin = ArchetypeHeader.GET_SKINEPSILON(Archetype.PrimitiveType());
 
         /* trace from player */
         Archetype.Trace(
-            position,
+            position - (forward * skin),
             forward,
-            dist,
+            dist + skin,
             orientation,
             ValidLedgeMask,
             0F,

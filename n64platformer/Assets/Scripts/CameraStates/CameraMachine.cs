@@ -62,7 +62,13 @@ public class CameraMachine : MonoBehaviour
 
         GetEventRegistry.Event_ActorJumped += () =>
         {
+            FSM.SwitchState("Manual");
             MainChain.AddExecution(JumpExecution);
+        };
+
+        GetEventRegistry.Event_ActorLanded += () => 
+        {
+            FSM.SwitchState("Automatic");
         };
 
         GetEventRegistry.Event_ActorFoundLedge += (Vector3 hang_position) => 

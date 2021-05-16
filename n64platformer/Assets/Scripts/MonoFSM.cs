@@ -39,6 +39,39 @@ public class MonoFSM<T1, T2> where T2 : MonoFSM<T1, T2>.IMonoState
         _Current = next;
     }
 
+    public void SwitchState(Func<T2, bool> query, Action<T2> prepare, T1 nextkey)
+    {
+        T2 next = StateRegistry[nextkey];
+        
+        if(!query.Invoke(next))
+            return;
+
+        prepare.Invoke(next);
+        // notify exit
+        // notify enter
+        // swap
+        _Current.Exit(next);
+        next.Enter(_Current);
+        _Current = next;
+    }
+
+    public bool TrySwitchState(Func<T2, bool> query, T1 nextkey)
+    {
+        T2 next = StateRegistry[nextkey];
+        
+        if(!query.Invoke(next))
+            return false;
+
+        // notify exit
+        // notify enter
+        // swap
+        _Current.Exit(next);
+        next.Enter(_Current);
+        _Current = next;
+
+        return true;
+    }
+
     public void AddState(T1 key, T2 value) => StateRegistry.Add(key, value);
     public void RemoveState(T1 key) => StateRegistry.Remove(key);
 

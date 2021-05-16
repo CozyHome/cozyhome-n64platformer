@@ -63,11 +63,10 @@ public class GroundState : ActorState
         PlayerInput PlayerInput = Machine.GetPlayerInput;
         Animator Animator = Machine.GetAnimator;
 
-        Vector2 Local = PlayerInput.GetRawMove;
-        bool XButton = PlayerInput.GetXButton;
+        bool XButton = PlayerInput.GetXTrigger;
 
-        Quaternion CameraRotation = CameraView.rotation;
-        Vector3 Move = CameraRotation * new Vector3(Local[0], 0F, Local[1]);
+        Vector2 Local = PlayerInput.GetRawMove;
+        Vector3 Move = ActorStateHeader.ComputeMoveVector(Local, CameraView.rotation, Vector3.up);
         Vector3 Velocity = Actor.velocity;
 
         float JoystickAmount = Local.magnitude;
@@ -75,8 +74,6 @@ public class GroundState : ActorState
         float Ratio = Speed / MaxMoveSpeed;
         float NewTilt = 0F;
 
-        Move[1] = 0F;
-        Move.Normalize();
 
         if (DetermineTransitions(XButton, Actor))
             return;

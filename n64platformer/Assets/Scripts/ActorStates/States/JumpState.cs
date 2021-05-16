@@ -12,7 +12,6 @@ public class JumpState : ActorState
 
     [Header("Jump Properties")]
     [SerializeField] private float JumpHeight = 4F;
-    [SerializeField] private float MaxLedgeVelocity = 1.0F;
     private float InitialSpeed;
     private bool HoldingJump = true;
 
@@ -76,12 +75,10 @@ public class JumpState : ActorState
         Transform CameraView = Machine.GetCameraView;
 
         Vector2 Local = Machine.GetPlayerInput.GetRawMove;
-        Vector3 Move = CameraView.rotation * new Vector3(Local[0], 0F, Local[1]);
-
-        Move[1] = 0F;
-        Move.Normalize();
-
+        Vector3 Move = ActorStateHeader.ComputeMoveVector(Local, CameraView.rotation, ModelView.up);
         Vector3 Velocity = Actor.velocity;
+
+        bool SquareTrigger = PlayerInput.GetSquareTrigger;
 
         HoldingJump &= PlayerInput.GetXButton;
 
@@ -97,72 +94,42 @@ public class JumpState : ActorState
             LedgeRegistry,
             Machine))
             return;
-        else
+        else if (SquareTrigger)
         {
-            if (HoldingJump)
-                gravitational_pull = GravityCurve.Evaluate(percent) * PlayerVars.GRAVITY;
-
-            Velocity -= Vector3.up * gravitational_pull * fdt;
-
-            /* Rotate Towards */
-            if (Move.sqrMagnitude > 0F)
+            if (Machine.GetFSM.TrySwitchState((ActorState next) =>
             {
-                float Turn = TurnTimeCurve.Evaluate(percent);
-
-                ModelView.rotation = Quaternion.RotateTowards(
-                    ModelView.rotation,
-                    Quaternion.LookRotation(Move, Vector3.up),
-                    Turn * MaxRotationSpeed * fdt);
-
-                Vector3 HorizontalV = Vector3.Scale(Velocity, new Vector3(1F, 0F, 1F));
-
-                Velocity -= HorizontalV;
-                HorizontalV += Move * (MaxMoveInfluence * Turn * fdt);
-                HorizontalV = Vector3.ClampMagnitude(HorizontalV, MaxHorizontalSpeed);
-                Velocity += HorizontalV;
-            }
-
-            Actor.SetVelocity(Velocity);
-            Machine.GetAnimator.SetFloat("Time", FallTimeCurve.Evaluate(percent));
+                return ((DiveState) next).CheckDiveEligiblity();
+            }, "Dive"))
+                return;
         }
-    }
-
-    public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)
-    {
-
-    }
-    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
-    {
-        /* Ground Transition */
-        if (Machine.ValidGroundTransition(trace.normal, trace.collider))
+        else if (Actor.Ground.stable && Mathf.Abs(VectorHeader.Dot(Velocity, Actor.Ground.normal)) <= 0.1F)
         {
             Machine.GetFSM.SwitchState("Ground");
             return;
         }
         else
         {
-            /* We've struck a wall, we need to determine whether or not its safe to climb or not? */
+            ActorStateHeader.AccumulateDeviatingGravity(ref Velocity,
+                HoldingJump ? GravityCurve.Evaluate(percent) : 1.0F,
+                fdt,
+                gravitational_pull);
 
-            /*
-            float XDeviation = Vector3.Angle(Vector3.up, trace.normal);
-            XDeviation = Mathf.Abs(90F - XDeviation); // get angular dif
+            /* Jump Repair */
+            ActorStateHeader.RepairTime(
+                fdt,
+                TurnTimeCurve.Evaluate(percent),
+                MaxRotationSpeed,
+                MaxHorizontalSpeed,
+                MaxMoveInfluence,
+                Move,
+                ModelView,
+                ref Velocity);
 
-            if (XDeviation <= 5.0F)
-            {
-                Machine.GetFSM.SwitchState(
-                    (ActorState next) =>
-                    {
-                        ((WallSlideState)next).Prepare(trace.normal, velocity);
-                    }, "WallSlide");
-            }
-            else // not a wall 
-            {
-
-            }
-
-            return;
-            */
+            Actor.SetVelocity(Velocity);
+            Machine.GetAnimator.SetFloat("Time", FallTimeCurve.Evaluate(percent));
         }
     }
+    public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask) { }
+    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity) { }
 
 }

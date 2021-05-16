@@ -11,7 +11,6 @@ enum MantleType
 public class MantleState : ActorState
 {
     [Header("Mantle Parameters")]
-    [SerializeField] private float GravitationalScale = 0.5F;
     [SerializeField] private float UpwardOffset;
     [SerializeField] private float InwardAcceleration;
 
@@ -20,6 +19,7 @@ public class MantleState : ActorState
 
     private Vector3 Displacement;
     private MantleType MantleType;
+    private float TotalAnimationLength, AnimationElapsed;
 
     public void Prepare(Vector3 hang_position, Vector3 mantle_position) /* Called when player presses XButton in LedgeState */
     {
@@ -34,6 +34,8 @@ public class MantleState : ActorState
 
     public override void Enter(ActorState prev)
     {
+        AnimationElapsed = 0F;
+
         ActorHeader.Actor Actor = Machine.GetActor;
         Animator Animator = Machine.GetAnimator;
         float UpwardVelocity = Displacement[1];
@@ -49,9 +51,11 @@ public class MantleState : ActorState
         {
             case MantleType.Fast:
                 Animator.SetInteger("Step", 1);
+                TotalAnimationLength = (1F / 2F);
                 break;
             case MantleType.Slow:
                 Animator.SetInteger("Step", 2);
+                TotalAnimationLength = (1F / 1.33F);
                 break;
         }
 
@@ -82,6 +86,15 @@ public class MantleState : ActorState
         Animator Animator = Machine.GetAnimator;
         ActorHeader.Actor Actor = Machine.GetActor;
 
+        if (Actor.Ground.stable && AnimationElapsed >= TotalAnimationLength)
+        {
+            Machine.GetFSM.SwitchState("Ground");
+            Actor.SetVelocity(Vector3.zero);
+            return;
+        }
+        else
+            AnimationElapsed += fdt;
+
         float NormalizedTime = Animator.GetCurrentAnimatorStateInfo(0).normalizedTime;
         Vector3 AnimationVelocity = AnimationMoveBundle.GetRootDisplacement(fdt);
         AnimationMoveBundle.Clear();
@@ -89,10 +102,6 @@ public class MantleState : ActorState
         /* To give the player the ability to land on the platform in front of them, we'll apply an inward velocity every frame */
         Actor.SetVelocity(AnimationVelocity);
 
-        if (Actor.Ground.stable && AnimationVelocity[1] <= 0F)
-        {
-            Machine.GetFSM.SwitchState("Ground");
-        }
     }
 
     private void OnAnimatorMove()

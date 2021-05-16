@@ -17,14 +17,6 @@ public class AutomaticOrbitState : CameraState
     protected override void OnStateInitialize()
     {
         Machine.GetFSM.SetState(this);
-
-        Machine.GetEventRegistry.Event_ActorJumped += delegate
-        {
-            /* when we jump, automatically do the following:
-               set our state to IdleOrbitState (which does nothing but apply position)
-            */
-            Machine.GetFSM.SwitchState("Idle");
-        };
     }
 
     public override void Enter(CameraState prev)

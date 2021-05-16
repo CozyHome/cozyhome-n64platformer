@@ -43,6 +43,7 @@ namespace com.cozyhome.Actors
         // with getters and setters as they pollute the class and make it more complicated than it 
         // needs to be. If you somehow change the data in these hits, that's on you. I've kept it open-ended
         // so anybody can do what they want with this class when handling the actor's state.
+        [System.Serializable]
         public class GroundHit
         {
             public Vector3 actorpoint; // our actor's position at the time of our hit
@@ -59,6 +60,7 @@ namespace com.cozyhome.Actors
                 normal = Vector3.zero;
                 stable = false;
                 snapped = false;
+                distance = 0.0F;
             }
         }
 
@@ -93,8 +95,8 @@ namespace com.cozyhome.Actors
             [Tooltip("A Bitmask to help you filter out specific sets of colliders you want this actor to ignore during its movement.")]
             [SerializeField] protected LayerMask _filter;
 
-            [System.NonSerialized] private readonly GroundHit _groundhit = new GroundHit();
-            [System.NonSerialized] private readonly GroundHit _lastgroundhit = new GroundHit();
+            private GroundHit _groundhit = new GroundHit();
+            private GroundHit _lastgroundhit = new GroundHit();
 
             [System.NonSerialized] protected readonly RaycastHit[] _internalhits = new RaycastHit[ActorHeader.MAX_HITS];
 
@@ -916,7 +918,7 @@ namespace com.cozyhome.Actors
             */
 
             /* feel free to change these values, I think they're pretty decent atm */
-            float gtracelen = (lastground.stable && lastground.snapped) ? 0.2F : 0.05F;
+            float gtracelen = (lastground.stable && lastground.snapped) ? 0.2F : 0.15F;
 
             while (numgroundbumps++ < MAX_GROUNDBUMPS &&
                 gtracelen > 0F)
@@ -946,7 +948,7 @@ namespace com.cozyhome.Actors
                 */
                 archetype.Trace(gposition + (updir * skin),
                     groundtracedir,
-                    gtracelen + skin,
+                    gtracelen + 2F * skin,
                     orientation,
                     layermask,
                     /* inflate */ 0F,

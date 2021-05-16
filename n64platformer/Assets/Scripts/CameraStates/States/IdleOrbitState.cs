@@ -7,11 +7,13 @@ public class IdleOrbitState : CameraState
 
     protected override void OnStateInitialize()
     {
+        /*
         Machine.GetEventRegistry.Event_ActorLanded += delegate 
         {
             if(Machine.GetFSM.Current.GetKey == this.GetKey)
                 Machine.GetFSM.SwitchState("Automatic");  
         };
+        */
     }
 
     public override void Enter(CameraState prev)

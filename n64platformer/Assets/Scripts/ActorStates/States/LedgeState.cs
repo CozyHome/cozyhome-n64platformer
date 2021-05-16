@@ -63,7 +63,7 @@ public class LedgeState : ActorState
 
     public override void Tick(float fdt)
     {
-        bool XButton = Machine.GetPlayerInput.GetXButton;
+        bool XButton = Machine.GetPlayerInput.GetXTrigger;
 
         if (XButton &&
             !Machine.GetChain.IsExecutionActive(ExecutionHeader.Actor.ExecutionIndex.OnLedgeExecution))
