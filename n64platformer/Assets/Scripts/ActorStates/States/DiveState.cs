@@ -4,6 +4,7 @@ using UnityEngine;
 public class DiveState : ActorState
 {
     [SerializeField] private AnimationCurve DiveTurnCurve;
+    [SerializeField] private AnimationCurve DiveDeaccelerationCurve;
     [SerializeField] private int DivesPerAerialState = 1;
     [SerializeField] private float DiveHeight = 1.5F;
     [SerializeField] private float DiveSpeed = 26F;
@@ -12,7 +13,7 @@ public class DiveState : ActorState
     private float InitialSpeed = 0F;
     private int DiveCount = 0;
 
-    public bool CheckDiveEligiblity() { return DiveCount > 0; }
+    public bool CheckDiveEligiblity() => DiveCount > 0;
 
     public override void Enter(ActorState prev)
     {
@@ -22,6 +23,8 @@ public class DiveState : ActorState
         Vector3 Velocity = Actor.velocity;
 
         Animator.SetTrigger("Dive");
+        Animator.SetInteger("Step", 0);
+        Animator.SetFloat("Time", 0);
 
         /* clear velocity */
         for (int i = 0; i < 3; i++)
@@ -30,18 +33,17 @@ public class DiveState : ActorState
         /* grab forward direction of our character and use as influence vector */
         Velocity = (ModelView.forward * DiveSpeed) + (Vector3.up * Mathf.Sqrt(2F * PlayerVars.GRAVITY * DiveHeight));
         InitialSpeed = Velocity[1];
+        
         DiveCount--;
 
         Actor.SetVelocity(Velocity);
     }
 
-    public override void Exit(ActorState next)
-    {
-
-    }
+    public override void Exit(ActorState next) { }
 
     public override void Tick(float fdt)
     {
+        Animator Animator = Machine.GetAnimator;
         LedgeRegistry LedgeRegistry = Machine.GetLedgeRegistry;
         ActorHeader.Actor Actor = Machine.GetActor;
         Transform ModelView = Machine.GetModelView;
@@ -63,7 +65,7 @@ public class DiveState : ActorState
             return;
         else if (Actor.Ground.stable)
         {
-            Machine.GetFSM.SwitchState("Ground");
+            Machine.GetFSM.SwitchState("DiveSlide");
             return;
         }
         else
@@ -71,6 +73,8 @@ public class DiveState : ActorState
             Vector3 HorizontalVelocity = Vector3.Scale(Velocity, new Vector3(1F, 0F, 1F));
             Vector3 VerticalVelocity = Velocity - HorizontalVelocity;
             float len = HorizontalVelocity.magnitude;
+
+            len -= DiveDeaccelerationCurve.Evaluate(len / DiveSpeed);
 
             HorizontalVelocity = ModelView.forward * len;
 
@@ -85,7 +89,9 @@ public class DiveState : ActorState
                 ModelView,
                 ref Velocity);
 
+            Animator.SetFloat("Speed", 1F - percent);
             Actor.SetVelocity(VerticalVelocity + HorizontalVelocity);
+            return;
         }
     }
 

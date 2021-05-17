@@ -575,6 +575,7 @@ GameObject:
   - component: {fileID: 864958342}
   - component: {fileID: 864958343}
   - component: {fileID: 864958344}
+  - component: {fileID: 864958345}
   - component: {fileID: 864958338}
   - component: {fileID: 864958339}
   - component: {fileID: 864958333}
@@ -679,22 +680,22 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: -0.4988966
-      outSlope: -0.4988966
+      time: -1
+      value: 1.001152
+      inSlope: -0.43855602
+      outSlope: -0.43855602
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.051246963
+      outWeight: 0.035658024
     - serializedVersion: 3
       time: 1
       value: 0.7000122
-      inSlope: 0.0014334263
-      outSlope: 0.0014334263
+      inSlope: -0.0004405533
+      outSlope: -0.0004405533
       tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.066946924
+      weightedMode: 1
+      inWeight: 0.7527812
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -712,8 +713,17 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0.07654308
     - serializedVersion: 3
+      time: 0
+      value: 0.99723196
+      inSlope: -0.0058536055
+      outSlope: -0.0058536055
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.13688405
+    - serializedVersion: 3
       time: 1
-      value: 1.0022011
+      value: 0
       inSlope: 0.029698793
       outSlope: 0.029698793
       tangentMode: 0
@@ -723,7 +733,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  MaxRotationSpeed: 720
+  MaxRotationSpeed: 480
   MaxMoveInfluence: 15
   MaxHorizontalSpeed: 20
 --- !u!114 &864958335
@@ -865,7 +875,7 @@ MonoBehaviour:
   MaxRotateSpeed: 840
   MaxMoveSpeed: 20
   MoveAcceleration: 25
-  WalkAcceleration: 20
+  WalkAcceleration: 16
 --- !u!114 &864958336
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -919,8 +929,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3795bd5df6fe174e95fc2a9ebcd393d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxLedgeHeight: 4
-  MinLedgeHeight: 2.5
+  MaxLedgeHeight: 3.5
+  MinLedgeHeight: 2.85
   ProbeDistance: 0.5
   ValidLedgeMask:
     serializedVersion: 2
@@ -1062,14 +1072,14 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0
+      time: -1
       value: 1.0022011
-      inSlope: -0.44737098
-      outSlope: -0.44737098
+      inSlope: -0.01371652
+      outSlope: -0.01371652
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.058606464
+      outWeight: 0.058946222
     - serializedVersion: 3
       time: 1
       value: 0.7
@@ -1095,8 +1105,17 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0.07169345
     - serializedVersion: 3
-      time: 1.0049142
-      value: 1.0022027
+      time: -0
+      value: 1
+      inSlope: -0.01637602
+      outSlope: -0.01637602
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.18862285
+    - serializedVersion: 3
+      time: 1
+      value: 0.00000166893
       inSlope: -0.032398682
       outSlope: -0.032398682
       tangentMode: 0
@@ -1109,7 +1128,7 @@ MonoBehaviour:
   MaxAngularAdjustment: 45
   JumpHeight: 6
   ForwardJumpSpeed: 18
-  MaxRotationSpeed: 720
+  MaxRotationSpeed: 480
   MaxMoveInfluence: 15
   MaxHorizontalSpeed: 24
 --- !u!114 &864958344
@@ -1129,7 +1148,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: -0
+      time: -1
       value: 0
       inSlope: 0.061446145
       outSlope: 0.061446145
@@ -1149,10 +1168,72 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  DiveDeaccelerationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0.5
+      value: 0
+      inSlope: -0.03916347
+      outSlope: -0.03916347
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.112484574
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0.028740777
+      outSlope: 0.028740777
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.15327561
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   DivesPerAerialState: 1
   DiveHeight: 1
-  DiveSpeed: 30
-  DiveTurnSpeed: 45
+  DiveSpeed: 45
+  DiveTurnSpeed: 65
+--- !u!114 &864958345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 864958330}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7eeb57cc8f432204dbf29d8a2c237325, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Key: DiveSlide
+  FrictionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0.5
+      value: 1
+      inSlope: -0.11053314
+      outSlope: -0.11053314
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.09528222
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0.09912194
+      outSlope: 0.09912194
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.08301377
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  FrictionAmount: 30
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -1286,7 +1367,7 @@ MonoBehaviour:
   DolleyDistance: 16
   MaxVerticalAngle: 150
   JumpExecution:
-    key: 2
+    key: 1
     EaseCurve:
       serializedVersion: 2
       m_Curve:
@@ -1300,14 +1381,14 @@ MonoBehaviour:
         inWeight: 0
         outWeight: 0.17574257
       - serializedVersion: 3
-        time: 0.4987654
+        time: 0.39999998
         value: 1
-        inSlope: -0.01189073
-        outSlope: -0.01189073
+        inSlope: 0.0111098755
+        outSlope: 0.0111098755
         tangentMode: 0
         weightedMode: 3
         inWeight: 0.7966201
-        outWeight: 0.79942566
+        outWeight: 0.33044913
       - serializedVersion: 3
         time: 1
         value: 0
@@ -1321,9 +1402,9 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     MaxJumpTime: 1
-    BounceHeight: 0.5
+    BounceHeight: 1
   HangExecution:
-    key: 1
+    key: 2
     EaseCurve:
       serializedVersion: 2
       m_Curve:
@@ -1337,7 +1418,7 @@ MonoBehaviour:
         inWeight: 0
         outWeight: 0.072929546
       - serializedVersion: 3
-        time: 1
+        time: 0.79999995
         value: 1
         inSlope: -0
         outSlope: -0
@@ -1350,7 +1431,7 @@ MonoBehaviour:
       m_RotationOrder: 4
     InitialPosition: {x: 0, y: 0, z: 0}
     HangPosition: {x: 0, y: 0, z: 0}
-    MaxHangTime: 1
+    MaxHangTime: 0.01
   VerticalOffset: 4
 --- !u!114 &963194230
 MonoBehaviour:

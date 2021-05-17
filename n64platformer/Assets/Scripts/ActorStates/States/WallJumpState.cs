@@ -113,8 +113,6 @@ public class WallJumpState : ActorState
                 ModelView,
                 ref Velocity);
 
-            Debug.DrawRay(Actor.position, Move, Color.red);
-
             HoldingJump &= PlayerInput.GetXButton;
 
             ActorStateHeader.AccumulateDeviatingGravity(ref Velocity,

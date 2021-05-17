@@ -24,7 +24,7 @@ public static class ExecutionHeader
 
             public override bool Execute(CameraMiddleman Middleman)
             {
-                if (JumpTime >= MaxJumpTime)
+                if (JumpTime > MaxJumpTime)
                     return false;
                 else
                 {
@@ -44,16 +44,12 @@ public static class ExecutionHeader
             [SerializeField] private Vector3 InitialPosition, HangPosition;
             [SerializeField] private float MaxHangTime = 1.0F;
             private float HangTime = 0.0F;
-            
-            public void Prepare(CameraMiddleman Middleman, Vector3 hang_position)
-            {
-                /* get our transform target location */    
-                InitialPosition = Middleman.GetMachine.ViewPosition;
-            }
-            
+            private bool EntryNotSet;
+
             public override void Enter(CameraMiddleman Middleman)
-            { 
+            {
                 HangTime = 0.0F;
+                EntryNotSet = true;
             }
             public override void Exit(CameraMiddleman Middleman)
             {
@@ -62,10 +58,16 @@ public static class ExecutionHeader
 
             public override bool Execute(CameraMiddleman Middleman)
             {
-                if(HangTime >= MaxHangTime)
+                if (HangTime > MaxHangTime)
                     return false;
-                else 
+                else
                 {
+                    if (EntryNotSet)
+                    {
+                        InitialPosition = Middleman.GetMachine.ViewPosition;
+                        EntryNotSet = false;
+                    }
+
                     float Amount = EaseCurve.Evaluate(HangTime / MaxHangTime);
                     Middleman.GetMachine.SetViewPosition(
                         Vector3.Lerp(InitialPosition,
@@ -82,7 +84,7 @@ public static class ExecutionHeader
 
     public static class Actor
     {
-        public enum ExecutionIndex 
+        public enum ExecutionIndex
         {
             OnLedgeExecution = 0
         };

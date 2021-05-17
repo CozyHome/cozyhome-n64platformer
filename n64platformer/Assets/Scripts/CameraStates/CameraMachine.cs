@@ -73,7 +73,6 @@ public class CameraMachine : MonoBehaviour
 
         GetEventRegistry.Event_ActorFoundLedge += (Vector3 hang_position) => 
         {
-            HangExecution.Prepare(Middleman, hang_position);
             MainChain.AddExecution(HangExecution);
         };
     }
