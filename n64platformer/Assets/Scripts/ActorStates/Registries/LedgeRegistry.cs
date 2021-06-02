@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using com.cozyhome.Actors;
 using com.cozyhome.Archetype;
 using com.cozyhome.Vectors;
@@ -8,6 +7,9 @@ using UnityEngine;
 
 public class LedgeRegistry : MonoBehaviour
 {
+    public const float REGULAR_DISTANCE = 0.5F; 
+    public const float DIVE_DISTANCE = 0.5F; 
+
     private const int HIT_PRIMIVITE_LEDGETRACE = 0x0001;
     private const int BLOCKING_PRIMITIVE_LEDGETRACE = 0x0002;
     private const int VALID_LINE_LEDGETRACE = 0x0004;
@@ -50,6 +52,9 @@ public class LedgeRegistry : MonoBehaviour
         public bool IsLedge => (LedgeStatus & VALID_LINE_LEDGETRACE) != 0;
         public bool IsSafe => (LedgeStatus & SAFE_PRIMITIVE_LEDGETRACE) != 0;
     }
+
+    public void SetProbeDistance(float distance)
+    => this.ProbeDistance = distance;
 
     public enum LedgeResult
     {
@@ -138,7 +143,7 @@ public class LedgeRegistry : MonoBehaviour
         const float min_hoffset = 0.1F, min_voffset = 0.1F, min_correlation = 0.025F;
 
         /* is our primitive trace really hitting a wall, or is it a ceiling/slope? */
-        if (VectorHeader.Dot(normal, Vector3.up) < min_correlation)
+        if (Mathf.Abs(VectorHeader.Dot(normal, Vector3.up)) < min_correlation)
         {
             ledgehit.AuxillaryDelta[0] = -dist;
             ledgehit.LedgePlanarNormal = normal;

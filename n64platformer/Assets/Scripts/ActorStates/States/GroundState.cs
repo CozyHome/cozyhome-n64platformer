@@ -74,7 +74,6 @@ public class GroundState : ActorState
         float Ratio = Speed / MaxMoveSpeed;
         float NewTilt = 0F;
 
-
         if (DetermineTransitions(XButton, Actor))
             return;
 

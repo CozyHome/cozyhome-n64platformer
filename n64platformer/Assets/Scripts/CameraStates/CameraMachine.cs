@@ -45,9 +45,9 @@ public class CameraMachine : MonoBehaviour
         float fdt = Time.fixedDeltaTime;
 
         FSM.Current.FixedTick(fdt);
-
         Middleman.SetFixedDeltaTime(fdt);
         MainChain.FixedTick();
+
         SolveOcclusion();
     }
 
@@ -66,12 +66,12 @@ public class CameraMachine : MonoBehaviour
             MainChain.AddExecution(JumpExecution);
         };
 
-        GetEventRegistry.Event_ActorLanded += () => 
+        GetEventRegistry.Event_ActorLanded += () =>
         {
             FSM.SwitchState("Automatic");
         };
 
-        GetEventRegistry.Event_ActorFoundLedge += (Vector3 hang_position) => 
+        GetEventRegistry.Event_ActorFoundLedge += (Vector3 hang_position) =>
         {
             MainChain.AddExecution(HangExecution);
         };
@@ -107,17 +107,17 @@ public class CameraMachine : MonoBehaviour
 
     public Vector3 ComputeOrbitPosition()
     {
-        float Ratio = Vector3.Dot( ViewTransform.forward, Vector3.up);
+        float Ratio = Vector3.Dot(ViewTransform.forward, Vector3.up);
         float Amount = DistanceCurve.Evaluate(Ratio) * DolleyDistance;
- 
+
         return OrbitTransform.position - (ViewTransform.forward * Amount) + (Vector3.up * VerticalOffset);
     }
 
     public void ApplyOffset(Vector3 offset) => ViewTransform.position += offset;
     public void SetViewPosition(Vector3 position) => ViewTransform.position = position;
     public void SetViewRotation(Quaternion newrotation) => ViewTransform.rotation = newrotation;
-    
-    public void SolveOcclusion() 
+
+    public void SolveOcclusion()
     {
         Vector3 start = OrbitTransform.position + (Vector3.up * VerticalOffset);
         Vector3 displacement = ViewTransform.position - start;

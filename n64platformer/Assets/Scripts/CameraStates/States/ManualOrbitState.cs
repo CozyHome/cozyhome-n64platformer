@@ -53,7 +53,6 @@ public class ManualOrbitState : CameraState
         }
         else
         {
-
             EaseTime -= fdt;
             EaseTime = Mathf.Max(EaseTime, 0F);
         }

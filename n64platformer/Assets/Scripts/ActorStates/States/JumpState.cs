@@ -1,4 +1,5 @@
 using com.cozyhome.Actors;
+using com.cozyhome.Timers;
 using com.cozyhome.Vectors;
 using UnityEngine;
 
@@ -23,14 +24,14 @@ public class JumpState : ActorState
     [SerializeField] private float MaxMoveInfluence = 10F;
     [SerializeField] private float MaxHorizontalSpeed = 28F;
 
-    private float LastLandTime = 0F;
+    [SerializeField] private TimerHeader.SnapshotTimer LastLandingTimer;
     private float LastJumpTilt = 0F;
 
     protected override void OnStateInitialize()
     {
         Machine.GetActorEventRegistry.Event_ActorLanded += delegate
         {
-            LastLandTime = Time.time;
+            LastLandingTimer.Stamp(Time.time);
         };
     }
 
@@ -46,24 +47,22 @@ public class JumpState : ActorState
 
         InitialSpeed = Mathf.Sqrt(2F * PlayerVars.GRAVITY * JumpHeight);
         Velocity += Vector3.up * InitialSpeed;
+        HoldingJump = true;
 
         Actor.SetVelocity(Velocity);
         Actor.SetSnapEnabled(false);
 
-        HoldingJump = true;
-        Animator.SetTrigger("Jump");
         /* swap jump poses */
-
-        if (Time.time - LastLandTime < 1F)
+        if (!LastLandingTimer.Check(Time.time))
             LastJumpTilt = (LastJumpTilt + 1) % 2;
         else
             LastJumpTilt = 0F;
 
+        Animator.SetTrigger("Jump");
         Animator.SetFloat("Tilt", LastJumpTilt);
 
         /* notify our callback system */
         Machine.GetActorEventRegistry.Event_ActorJumped?.Invoke();
-
     }
 
     public override void Tick(float fdt)

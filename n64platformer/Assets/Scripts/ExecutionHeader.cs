@@ -1,7 +1,5 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using com.cozyhome.Actors;
+using com.cozyhome.Timers;
 using com.cozyhome.Vectors;
 using UnityEngine;
 
@@ -14,24 +12,23 @@ public static class ExecutionHeader
         public class OnJumpExecution : ExecutionChain<int, CameraMiddleman>.Execution
         {
             [SerializeField] private AnimationCurve EaseCurve;
-            [SerializeField] private float MaxJumpTime;
+            [SerializeField] private TimerHeader.DeltaTimer JumpTimer;
             [SerializeField] private float BounceHeight = 2F;
-            private float JumpTime;
 
-            public override void Enter(CameraMiddleman Middleman) { JumpTime = 0F; }
+            public override void Enter(CameraMiddleman Middleman) { JumpTimer.Reset(); }
 
-            public override void Exit(CameraMiddleman Middleman) { JumpTime = 0F; }
+            public override void Exit(CameraMiddleman Middleman) { }
 
             public override bool Execute(CameraMiddleman Middleman)
             {
-                if (JumpTime > MaxJumpTime)
+                if (JumpTimer.Check())
                     return false;
                 else
                 {
-                    float value = EaseCurve.Evaluate(JumpTime / MaxJumpTime) * BounceHeight;
+                    float value = EaseCurve.Evaluate(JumpTimer.NormalizedElapsed) * BounceHeight;
                     Middleman.GetMachine.ApplyOffset(Vector3.up * value);
 
-                    JumpTime += Middleman.FDT;
+                    JumpTimer.Accumulate(Middleman.FDT);
                     return true;
                 }
             }
@@ -41,40 +38,32 @@ public static class ExecutionHeader
         public class OnHangExecution : ExecutionChain<int, CameraMiddleman>.Execution
         {
             [SerializeField] private AnimationCurve EaseCurve;
-            [SerializeField] private Vector3 InitialPosition, HangPosition;
-            [SerializeField] private float MaxHangTime = 1.0F;
-            private float HangTime = 0.0F;
-            private bool EntryNotSet;
+            [SerializeField] private Vector3 InitialPosition;
+            [SerializeField] private TimerHeader.DeltaTimer HangTimer;
 
             public override void Enter(CameraMiddleman Middleman)
             {
-                HangTime = 0.0F;
-                EntryNotSet = true;
+                InitialPosition = Middleman.GetMachine.ViewPosition;
+                HangTimer.Reset();
             }
-            public override void Exit(CameraMiddleman Middleman)
-            {
-                HangTime = 0.0F;
-            }
+            public override void Exit(CameraMiddleman Middleman) { }
 
             public override bool Execute(CameraMiddleman Middleman)
             {
-                if (HangTime > MaxHangTime)
+                if (HangTimer.Check())
                     return false;
                 else
                 {
-                    if (EntryNotSet)
-                    {
-                        InitialPosition = Middleman.GetMachine.ViewPosition;
-                        EntryNotSet = false;
-                    }
+                    float Amount = EaseCurve.Evaluate(HangTimer.NormalizedElapsed);
 
-                    float Amount = EaseCurve.Evaluate(HangTime / MaxHangTime);
-                    Middleman.GetMachine.SetViewPosition(
-                        Vector3.Lerp(InitialPosition,
-                            Middleman.GetMachine.ViewPosition,
-                            Amount));
+                    InitialPosition = Vector3.Lerp(
+                        InitialPosition,
+                        Middleman.GetMachine.ViewPosition,
+                        Amount);
 
-                    HangTime += Middleman.FDT;
+                    Middleman.GetMachine.SetViewPosition(InitialPosition);
+
+                    HangTimer.Accumulate(Middleman.FDT);
                     return true;
                 }
             }
@@ -93,20 +82,16 @@ public static class ExecutionHeader
         public class OnLedgeExecution : ExecutionChain<ExecutionIndex, ActorMiddleman>.Execution
         {
             [SerializeField] private AnimationCurve LedgeCurve;
-            [SerializeField] private float MaxLedgeTime;
 
-            private float LedgeTime;
-            private Vector3 ledge_position, hang_position, mantle_position;
+            [SerializeField] private TimerHeader.DeltaTimer LedgeTimer;
+            private Vector3 ledge_position, hang_position;
             private Quaternion hang_rotation, ledge_rotation;
             public override void Enter(ActorMiddleman Middleman)
             {
                 /* when we are activated, we will be able to do something cool */
-                LedgeTime = 0F;
+                LedgeTimer.Reset();
             }
-            public override void Exit(ActorMiddleman Middleman)
-            {
-                LedgeTime = 0F;
-            }
+            public override void Exit(ActorMiddleman Middleman) { }
 
             public override bool Execute(ActorMiddleman Middleman)
             {
@@ -115,13 +100,11 @@ public static class ExecutionHeader
                 ActorHeader.Actor Actor = Middleman.Machine.GetActor;
                 Transform ModelView = Middleman.Machine.GetModelView;
 
-                if (LedgeTime > MaxLedgeTime)
+                if (LedgeTimer.Check())
                     return false;
                 else
                 {
-                    LedgeTime += Middleman.FDT;
-
-                    float percent = LedgeCurve.Evaluate(LedgeTime / MaxLedgeTime);
+                    float percent = LedgeCurve.Evaluate(LedgeTimer.NormalizedElapsed);
 
                     Actor.SetPosition(
                         Vector3.Lerp(
@@ -138,6 +121,7 @@ public static class ExecutionHeader
 
                     Middleman.Machine.GetActor.SetVelocity(Vector3.zero);
 
+                    LedgeTimer.Accumulate(Middleman.FDT);
                     return true;
                 }
             }
@@ -150,7 +134,6 @@ public static class ExecutionHeader
             {
                 this.ledge_position = ledge_position;
                 this.hang_position = hang_position;
-                this.mantle_position = mantle_position;
 
                 this.ledge_rotation = ledge_rotation;
 

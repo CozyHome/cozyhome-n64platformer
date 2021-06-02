@@ -101,7 +101,6 @@ public class WallJumpState : ActorState
         }
         else
         {
-
             /* Jump Repair */
             ActorStateHeader.RepairTime(
                 fdt,

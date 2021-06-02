@@ -95,7 +95,7 @@ public class MantleState : ActorState
         else
             AnimationElapsed += fdt;
 
-        float NormalizedTime = Animator.GetCurrentAnimatorStateInfo(0).normalizedTime;
+
         Vector3 AnimationVelocity = AnimationMoveBundle.GetRootDisplacement(fdt);
         AnimationMoveBundle.Clear();
 

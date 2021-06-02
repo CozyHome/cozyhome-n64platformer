@@ -19,12 +19,15 @@ public class DiveState : ActorState
     {
         Transform ModelView = Machine.GetModelView;
         ActorHeader.Actor Actor = Machine.GetActor;
+        LedgeRegistry LedgeRegistry = Machine.GetLedgeRegistry;
         Animator Animator = Machine.GetAnimator;
         Vector3 Velocity = Actor.velocity;
 
-        Animator.SetTrigger("Dive");
-        Animator.SetInteger("Step", 0);
-        Animator.SetFloat("Time", 0);
+        LedgeRegistry.SetProbeDistance(LedgeRegistry.DIVE_DISTANCE);
+
+        Animator.SetTrigger("Dive"); // goto dive
+        Animator.SetInteger("Step", 0); // set step to zero
+        Animator.SetFloat("Time", 0); // set time to zero
 
         /* clear velocity */
         for (int i = 0; i < 3; i++)
@@ -33,13 +36,17 @@ public class DiveState : ActorState
         /* grab forward direction of our character and use as influence vector */
         Velocity = (ModelView.forward * DiveSpeed) + (Vector3.up * Mathf.Sqrt(2F * PlayerVars.GRAVITY * DiveHeight));
         InitialSpeed = Velocity[1];
-        
+
         DiveCount--;
 
         Actor.SetVelocity(Velocity);
     }
 
-    public override void Exit(ActorState next) { }
+    public override void Exit(ActorState next)
+    {
+        LedgeRegistry LedgeRegistry = Machine.GetLedgeRegistry;
+        LedgeRegistry.SetProbeDistance(LedgeRegistry.REGULAR_DISTANCE);
+    }
 
     public override void Tick(float fdt)
     {
@@ -97,7 +104,7 @@ public class DiveState : ActorState
 
     protected override void OnStateInitialize()
     {
-        Machine.GetActorEventRegistry.Event_ActorLanded += () => 
+        Machine.GetActorEventRegistry.Event_ActorLanded += () =>
         {
             DiveCount = DivesPerAerialState;
         };
