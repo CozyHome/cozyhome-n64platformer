@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ActorEventRegistry : MonoBehaviour
@@ -9,7 +7,9 @@ public class ActorEventRegistry : MonoBehaviour
     public Action Event_ActorLanded;
     public Action<Vector3> Event_ActorFoundLedge;
 
-    void Start() 
+#pragma warning disable IDE0051 // Remove unused private members
+    void Start()
+#pragma warning restore IDE0051 // Remove unused private members
     {
         Event_ActorJumped = null;
         Event_ActorLanded = null;

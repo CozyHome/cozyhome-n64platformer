@@ -9,7 +9,9 @@ public class DiveLiftState : ActorState
     public override void Enter(ActorState prev)
     {
         Animator Animator = Machine.GetAnimator;
-        Animator.SetInteger("Step", 1); // notify we are going to dive lift
+        Animator.SetInteger("Step", 2); // notify we are going to dive lift
+        Animator.SetFloat("Speed", 0F); // notify we are going to dive lift
+        Animator.SetFloat("Tilt", 0F); // notify we are going to dive lift
 
         LiftTimer.Reset();
     }

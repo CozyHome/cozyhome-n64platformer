@@ -655,6 +655,7 @@ GameObject:
   - component: {fileID: 864958344}
   - component: {fileID: 864958345}
   - component: {fileID: 864958346}
+  - component: {fileID: 864958347}
   - component: {fileID: 864958338}
   - component: {fileID: 864958339}
   - component: {fileID: 864958333}
@@ -1010,7 +1011,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MaxLedgeHeight: 3.5
-  MinLedgeHeight: 1.5
+  MinLedgeHeight: 2.5
   ProbeDistance: 0.5
   ValidLedgeMask:
     serializedVersion: 2
@@ -1356,7 +1357,46 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Key: DiveLift
   LiftTimer:
-    TotalElapsedTime: 1.25
+    TotalElapsedTime: 1
+--- !u!114 &864958347
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 864958330}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c115a01c919a5134aa8f659ecf067efa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Key: DiveFlip
+  FallCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: -2.5834963
+      outSlope: -2.5834963
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.048197307
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0.10186735
+      outSlope: 0.10186735
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.19997185
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  FlipHeight: 4
+  FlipHorizontalScale: 1.2
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -1556,7 +1596,7 @@ MonoBehaviour:
     InitialPosition: {x: 0, y: 0, z: 0}
     HangTimer:
       TotalElapsedTime: 1
-  VerticalOffset: 4
+  VerticalOffset: 3
 --- !u!114 &963194230
 MonoBehaviour:
   m_ObjectHideFlags: 0
