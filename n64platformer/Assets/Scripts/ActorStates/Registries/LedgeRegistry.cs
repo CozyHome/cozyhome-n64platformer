@@ -8,13 +8,12 @@ using UnityEngine;
 public class LedgeRegistry : MonoBehaviour
 {
     public const float REGULAR_DISTANCE = 0.5F; 
-    public const float DIVE_DISTANCE = 0.5F; 
+    public const float DIVE_DISTANCE = 1.5F; 
 
     private const int HIT_PRIMIVITE_LEDGETRACE = 0x0001;
     private const int BLOCKING_PRIMITIVE_LEDGETRACE = 0x0002;
     private const int VALID_LINE_LEDGETRACE = 0x0004;
     private const int SAFE_PRIMITIVE_LEDGETRACE = 0x0008;
-
 
     public struct LedgeHit
     {

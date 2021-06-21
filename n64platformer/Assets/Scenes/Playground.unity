@@ -166,13 +166,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d06a36e5592366a4db4041f67ec99ec1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  JoystickX: LJoystickX
-  JoystickY: LJoystickY
-  MouseX: RJoystickX
-  MouseY: RJoystickY
-  XButton: Fire2
-  SquareButton: Fire1
-  LeftTrigger: LeftTrigger
+  Listen: 1
+  JoystickX: Horizontal
+  JoystickY: Vertical
+  MouseX: Mouse X
+  MouseY: Mouse Y
+  XButton: Fire1
+  SquareButton: Fire2
+  LeftTrigger: Fire3
   RawMove: {x: 0, y: 0}
   RawMouse: {x: 0, y: 0}
   RawXButton: 0
@@ -417,6 +418,10 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 29ce1c11b60cca642bc571c7a2533566, type: 2}
+    - target: {fileID: 5866666021909216657, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
+      propertyPath: m_UpdateMode
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: fa86eee00fb78e046a27478c93635c3f, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
@@ -1005,7 +1010,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MaxLedgeHeight: 3.5
-  MinLedgeHeight: 2
+  MinLedgeHeight: 1.5
   ProbeDistance: 0.5
   ValidLedgeMask:
     serializedVersion: 2
@@ -1295,7 +1300,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  DivesPerAerialState: 1
+  DivesPerAerialState: 2
   DiveHeight: 3
   DiveSpeed: 50
   DiveTurnSpeed: 65
@@ -6956,8 +6961,8 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.96, y: 0.32000017, z: 1.2800002}
   m_Center: {x: -0.48, y: 7.5199995, z: -3.84}
---- !u!65 &1475765572
-BoxCollider:
+--- !u!64 &1475765572
+MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -6966,9 +6971,10 @@ BoxCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 0.96, y: 0.32000017, z: 0.9599998}
-  m_Center: {x: -0.48, y: 7.5199995, z: -2.7199998}
+  serializedVersion: 4
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 8422515548383596769, guid: 63a3c9c2497eab04987b93056cf7a5b4, type: 3}
 --- !u!65 &1475765573
 BoxCollider:
   m_ObjectHideFlags: 0

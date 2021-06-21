@@ -210,7 +210,6 @@ namespace com.cozyhome.Console
                 Console.RemoveCharacterFromString(1);
             }
 
-
             bool _enter = (_args.InputFlags & 0x0004) != 0;
             if (_enter && !SubmittedLastFrame)
                 Console.SubmitLineForParsing();
@@ -221,6 +220,8 @@ namespace com.cozyhome.Console
 
         public void OnConsoleToggled(bool B, ConsoleArgs _args)
         {
+            Console.NotifyConsoleToggled(B); // tell our monoconsole what our state is
+
             if (B)
                 BeginExecution();
             else

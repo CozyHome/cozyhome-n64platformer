@@ -27,10 +27,7 @@ public class MantleState : ActorState
         MantleType = MantleType.Fast;
     }
 
-    protected override void OnStateInitialize()
-    {
-
-    }
+    protected override void OnStateInitialize() { }
 
     public override void Enter(ActorState prev)
     {
@@ -94,7 +91,6 @@ public class MantleState : ActorState
         }
         else
             AnimationElapsed += fdt;
-
 
         Vector3 AnimationVelocity = AnimationMoveBundle.GetRootDisplacement(fdt);
         AnimationMoveBundle.Clear();

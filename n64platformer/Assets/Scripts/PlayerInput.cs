@@ -1,9 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
+using com.cozyhome.Singleton;
+using com.cozyhome.Console;
+using com.cozyhome.Systems;
 using UnityEngine;
+using System;
 
 public class PlayerInput : MonoBehaviour
 {
+    [Header("Player Input Settings")]
+    [SerializeField] private bool Listen = true;
+
     [SerializeField] private string JoystickX = "Horizontal";
     [SerializeField] private string JoystickY = "Vertical";
 
@@ -24,14 +31,23 @@ public class PlayerInput : MonoBehaviour
     private InputTrigger XTrigger;
     private InputTrigger SquareTrigger;
 
+    private bool ConsoleActive;
+
     void Start() 
     {
         XTrigger = new InputTrigger();
         SquareTrigger = new InputTrigger();
+
+        // public delegate void Command(string[] modifiers, out string output);
+        MonoConsole.InsertCommand("mouse_state", Func_MouseMode);
+        MonoConsole.InsertToggleListener(Func_ConsoleToggled);
     }
 
     void Update()
     {
+        if (!Listen || ConsoleActive)
+            return;
+
         float DT = Time.deltaTime;
 
         RawMove[0] = Input.GetAxisRaw(JoystickX);
@@ -47,6 +63,7 @@ public class PlayerInput : MonoBehaviour
     
         XTrigger.Tick(DT, RawXButton);
         SquareTrigger.Tick(DT, RawSquareButton);
+
     }
 
     public Vector2 GetRawMove => RawMove;
@@ -54,10 +71,52 @@ public class PlayerInput : MonoBehaviour
     public bool GetXButton => RawXButton;
     public bool GetSquareButton => RawSquareButton;
     public bool GetLeftTrigger => RawLeftTrigger;
-
     public bool GetXTrigger => XTrigger.Consume();
     public bool GetSquareTrigger => SquareTrigger.Consume();
 
+    // delegate ConsoleHeader.ToggleRelay
+    void Func_ConsoleToggled(bool IsActive) => ConsoleActive = IsActive;
+    // delegate ConsoleHeader.Command
+    void Func_MouseMode(string[] modifiers, out string output)
+    {
+        if (modifiers.Length > 0)
+        {
+            output = "";
+            switch (modifiers[0])
+            {
+                case "CONFINED":
+                case "2\r":
+                    Cursor.lockState = CursorLockMode.Confined;
+                    output = "Cursor state is now confined";
+                    break;
+                case "LOCKED":
+                case "1\r":
+                    Cursor.lockState = CursorLockMode.Locked;
+                    output = "Cursor state is now locked";
+                    break;
+                case "FREE":
+                case "0\r":
+                    Cursor.lockState = CursorLockMode.None;
+                    output = "Cursor state is now free";
+                    break;
+            }
+        }
+        else
+        {
+            if (Cursor.lockState == CursorLockMode.Locked)
+            {
+                Cursor.lockState = CursorLockMode.None;
+                output = "Cursor state is now free";
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                output = "Cursor state is now locked";
+            }
+        }
+
+        return;
+    }
 }
 
 // Consume: If input press is true, return true and turn it off afterwards

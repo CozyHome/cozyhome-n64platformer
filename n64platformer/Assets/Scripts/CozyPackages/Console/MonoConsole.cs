@@ -14,6 +14,8 @@ namespace com.cozyhome.Console
         private Dictionary<string, ConsoleHeader.Command> Commands
             = new Dictionary<string, ConsoleHeader.Command>() { };
 
+        private ConsoleHeader.OnConsoleToggled ToggleRelay;
+
         protected override void OnAwake()
         {
             Printer.CacheLines();
@@ -60,12 +62,6 @@ namespace com.cozyhome.Console
         private void WriteToScreen(string output)
             => Printer.Write(output);
 
-        public static void InsertCommand(string key, ConsoleHeader.Command command)
-            => _instance?.InsertCMD(key, command);
-
-        public static void RemoveCommand(string key)
-            => _instance?.RemoveCMD(key);
-
         public void AppendCommandString(string inputString)
         =>
             Printer.AppendCommandString(inputString);
@@ -79,6 +75,36 @@ namespace com.cozyhome.Console
             string raw = Printer.GetInputLine();
             Printer.ClearInputLine();
             AttemptInvokation(raw);
+        }
+
+        public void NotifyConsoleToggled(bool B)
+        {
+            ToggleRelay?.Invoke(B);
+            return;
+        }
+
+        public static void InsertCommand(string key, ConsoleHeader.Command command)
+            => _instance?.InsertCMD(key, command);
+
+        public static void RemoveCommand(string key)
+            => _instance?.RemoveCMD(key);
+
+        // add listeners to let end user's know whether the console is active or not.
+
+        public static void InsertToggleListener(ConsoleHeader.OnConsoleToggled listener)
+        {
+            if (_instance)
+                _instance.ToggleRelay += listener;
+            else
+                return;
+        }
+
+        public static void RemoveToggleListener(ConsoleHeader.OnConsoleToggled listener)
+        {
+            if (_instance)
+                _instance.ToggleRelay -= listener;
+            else
+                return;
         }
     }
 }

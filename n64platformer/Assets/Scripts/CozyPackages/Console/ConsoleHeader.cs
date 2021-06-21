@@ -9,6 +9,7 @@ namespace com.cozyhome.Console
         const int NULLQUEUE = 8192;
 
         public delegate void Command(string[] modifiers, out string output);
+        public delegate void OnConsoleToggled(bool B);
 
         // this is probably the most scuffed algorithm I have ever written.
         public static string[] Parse(string rawinput, out int wc)

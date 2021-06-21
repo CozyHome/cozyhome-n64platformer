@@ -43,12 +43,11 @@ public class FallState : ActorState
         {
             Velocity -= Vector3.up * (PlayerVars.GRAVITY * fdt);
             Actor.SetVelocity(Velocity);
+            return;
         }
     }
 
     public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask) { }
 
-    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
-    {
-    }
+    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity) { }
 }

@@ -13,5 +13,6 @@ public class ActorEventRegistry : MonoBehaviour
     {
         Event_ActorJumped = null;
         Event_ActorLanded = null;
+        Event_ActorFoundLedge = null;
     }
 }
