@@ -54,6 +54,7 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
         MainChain.FixedTick();
 
         transform.SetPositionAndRotation(PlayerActor.position, PlayerActor.orientation);
+        Animator.Update(Time.fixedDeltaTime);
     }
 
     public void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)

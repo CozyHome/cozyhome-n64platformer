@@ -52,6 +52,8 @@ public class DiveFlipState : ActorState
 
     public override void Tick(float fdt)
     {
+        Transform ModelView = Machine.GetModelView;
+        LedgeRegistry LedgeRegistry = Machine.GetLedgeRegistry;
         Animator Animator = Machine.GetAnimator;
         ActorHeader.Actor Actor = Machine.GetActor;
         Vector3 Velocity = Actor.velocity;
@@ -63,10 +65,16 @@ public class DiveFlipState : ActorState
         float amount = FallCurve.Evaluate(percent);
 
         // Animator.SetFloat("Time", amount);
-
-        /* only land when our velocity is penetrating into the ground plane */
-        if (Actor.Ground.stable && Mathf.Abs(VectorHeader.Dot(Velocity, Actor.Ground.normal)) <= 0.1F)
-        {
+        if(ActorStateHeader.Transitions.CheckGeneralLedgeTransition(
+            Actor.position,
+            ModelView.forward,
+            Actor.orientation,
+            LedgeRegistry,
+            Machine))
+            return;
+        else if (Actor.Ground.stable && Mathf.Abs(VectorHeader.Dot(Velocity, Actor.Ground.normal)) <= 0.1F)
+        { 
+            /* only land when our velocity is penetrating into the ground plane */
             Machine.GetFSM.SwitchState("Ground");
             return;
         }
