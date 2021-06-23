@@ -11,7 +11,6 @@ public static class ActorStateHeader
             ModelUp);
     }
 
-
     public static void AccumulateDeviatingGravity(ref Vector3 Velocity, float ratio, float fdt, float gravitational_pull)
         => Velocity[1] -= (fdt * gravitational_pull * ratio);
 

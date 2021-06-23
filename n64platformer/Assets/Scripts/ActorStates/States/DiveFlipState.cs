@@ -8,7 +8,7 @@ public class DiveFlipState : ActorState
 {
     [SerializeField] private AnimationCurve FallCurve;
     [SerializeField] private float FlipHeight = 1.0F;
-    [SerializeField] private float FlipHorizontalScale = 1.2F;
+    [SerializeField] private float HorizontalVelocity = 1.2F;
 
     private float InitYVelocity;
 
@@ -23,11 +23,14 @@ public class DiveFlipState : ActorState
         Animator.SetFloat("Tilt", 0F);
 
         Vector3 Velocity = Actor.velocity;
-        InitYVelocity = Velocity[1] += Mathf.Sqrt(2F * FlipHeight * PlayerVars.GRAVITY);
+
+        Velocity[1] = 0F;
+        Velocity[1] = Velocity.magnitude;
 
         for (int i = 0; i < 3; i += 2)
-            Velocity[i] *= FlipHorizontalScale;
+            Velocity[i] *= (HorizontalVelocity / Velocity[1]);
 
+        InitYVelocity = Velocity[1] = Mathf.Sqrt(2F * FlipHeight * PlayerVars.GRAVITY);
         Actor.SetVelocity(Velocity);
         Actor.SetSnapEnabled(false);
     }

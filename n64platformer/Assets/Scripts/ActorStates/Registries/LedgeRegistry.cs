@@ -8,7 +8,7 @@ using UnityEngine;
 public class LedgeRegistry : MonoBehaviour
 {
     public const float REGULAR_DISTANCE = 0.5F; 
-    public const float DIVE_DISTANCE = 1.5F; 
+    public const float DIVE_DISTANCE = 2.5F; 
 
     private const int HIT_PRIMIVITE_LEDGETRACE = 0x0001;
     private const int BLOCKING_PRIMITIVE_LEDGETRACE = 0x0002;
@@ -52,8 +52,7 @@ public class LedgeRegistry : MonoBehaviour
         public bool IsSafe => (LedgeStatus & SAFE_PRIMITIVE_LEDGETRACE) != 0;
     }
 
-    public void SetProbeDistance(float distance)
-    => this.ProbeDistance = distance;
+    public void SetProbeDistance(float distance) => this.ProbeDistance = distance;
 
     public enum LedgeResult
     {

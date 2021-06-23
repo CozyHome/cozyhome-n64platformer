@@ -1,4 +1,5 @@
 using com.cozyhome.Actors;
+using com.cozyhome.Vectors;
 using UnityEngine;
 
 public class DiveState : ActorState
@@ -40,6 +41,7 @@ public class DiveState : ActorState
         DiveCount--;
 
         Actor.SetVelocity(Velocity);
+        Actor.SetSnapEnabled(false);
     }
 
     public override void Exit(ActorState next)
@@ -70,8 +72,9 @@ public class DiveState : ActorState
             LedgeRegistry,
             Machine))
             return;
-        else if (Actor.Ground.stable)
+        else if (Actor.Ground.stable && Mathf.Abs(VectorHeader.Dot(Velocity, Actor.Ground.normal)) <= 0.1F)
         {
+            Actor.SetSnapEnabled(true);
             Machine.GetFSM.SwitchState("DiveSlide");
             return;
         }

@@ -52,7 +52,6 @@ public class GroundState : ActorState
         TiltLerp = 0F;
         Machine.GetAnimator.ResetTrigger("Land");
         Machine.GetAnimator.SetFloat("Time", 0F);
-
     }
 
     public override void Tick(float fdt)
@@ -64,6 +63,7 @@ public class GroundState : ActorState
         Animator Animator = Machine.GetAnimator;
 
         bool XButton = PlayerInput.GetXTrigger;
+        bool SquareTrigger = PlayerInput.GetSquareTrigger;
 
         Vector2 Local = PlayerInput.GetRawMove;
         Vector3 Move = ActorStateHeader.ComputeMoveVector(Local, CameraView.rotation, Vector3.up);
@@ -74,7 +74,7 @@ public class GroundState : ActorState
         float Ratio = Speed / MaxMoveSpeed;
         float NewTilt = 0F;
 
-        if (DetermineTransitions(XButton, Actor))
+        if (DetermineTransitions(XButton, SquareTrigger, Actor))
             return;
 
         switch (GetWalkType(JoystickAmount))
@@ -122,12 +122,21 @@ public class GroundState : ActorState
         Animator.SetFloat("Speed", Speed / MaxMoveSpeed);
     }
 
-    private bool DetermineTransitions(bool XButton, ActorHeader.Actor Actor)
+    private bool DetermineTransitions(bool XButton, bool SquareTrigger, ActorHeader.Actor Actor)
     {
         if (!Actor.Ground.stable)
         {
             Machine.GetFSM.SwitchState("Fall");
             return true;
+        }
+
+        if (SquareTrigger)
+        {
+            if (Machine.GetFSM.TrySwitchState((ActorState next) =>
+            {
+                return ((DiveState)next).CheckDiveEligiblity();
+            }, "Dive"))
+                return true;
         }
 
         if (XButton)
