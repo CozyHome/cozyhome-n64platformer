@@ -6,6 +6,7 @@ public class ActorEventRegistry : MonoBehaviour
     public Action Event_ActorJumped;
     public Action Event_ActorLanded;
     public Action<Vector3> Event_ActorFoundLedge;
+    public Action<Quaternion> Event_ActorTurn;
 
 #pragma warning disable IDE0051 // Remove unused private members
     void Start()

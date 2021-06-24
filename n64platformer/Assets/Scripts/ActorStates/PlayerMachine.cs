@@ -69,15 +69,12 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
     public MonoFSM<string, ActorState> GetFSM => FSM;
     public ActorEventRegistry GetActorEventRegistry => ActorEventRegistry;
     public AnimatorEventRegistry GetAnimatorEventRegistry => AnimatorEventRegistry;
-
     public LedgeRegistry GetLedgeRegistry => LedgeRegistry;
-
     public Transform GetModelView => ModelView;
     public Transform GetCameraView => CameraView;
     public Animator GetAnimator => Animator;
     public ActorHeader.Actor GetActor => PlayerActor;
     public PlayerInput GetPlayerInput => PlayerInput;
-
 }
 
 [System.Serializable]
@@ -93,7 +90,9 @@ public class ActorMiddleman
     public PlayerMachine Machine => machine;
 }
 
-public abstract class ActorState : MonoBehaviour, ActorHeader.IActorReceiver, MonoFSM<string, ActorState>.IMonoState
+public abstract class ActorState : MonoBehaviour, 
+    ActorHeader.IActorReceiver, 
+    MonoFSM<string, ActorState>.IMonoState
 {
     /* */
     [SerializeField] protected string Key;
@@ -110,14 +109,9 @@ public abstract class ActorState : MonoBehaviour, ActorHeader.IActorReceiver, Mo
 
     public abstract void Enter(ActorState prev);
     public abstract void Exit(ActorState next);
-
     public string GetKey => Key;
-
-    protected abstract void OnStateInitialize();
-
     public abstract void Tick(float fdt);
-
     public abstract void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask);
     public abstract void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity);
-
+    protected abstract void OnStateInitialize();
 }

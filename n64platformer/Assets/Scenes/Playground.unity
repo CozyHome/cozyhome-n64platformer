@@ -715,7 +715,7 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1.5, y: 4, z: 1.5}
+  m_Size: {x: 1.75, y: 4, z: 1.75}
   m_Center: {x: 0, y: 2, z: 0}
 --- !u!114 &864958334
 MonoBehaviour:
@@ -957,6 +957,8 @@ MonoBehaviour:
   MaxMoveSpeed: 20
   MoveAcceleration: 25
   WalkAcceleration: 16
+  LastLandingTimer:
+    TotalDeltaDifference: 0.01
 --- !u!114 &864958336
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1651,7 +1653,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Key: Automatic
   PlayerInput: {fileID: 45771647}
-  MaxAutomaticSpeed: 80
+  MaxAutomaticSpeed: 40
   EasingCurve:
     serializedVersion: 2
     m_Curve:
@@ -1686,6 +1688,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   MaxTurnTime: 0.5
+  AngularDivider: 0.5
 --- !u!114 &963194232
 MonoBehaviour:
   m_ObjectHideFlags: 0

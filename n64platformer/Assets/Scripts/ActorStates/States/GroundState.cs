@@ -1,4 +1,5 @@
 using com.cozyhome.Actors;
+using com.cozyhome.Timers;
 using com.cozyhome.Vectors;
 using UnityEngine;
 
@@ -28,34 +29,48 @@ public class GroundState : ActorState
     [SerializeField] private float MoveAcceleration = 30F;
     [SerializeField] private float WalkAcceleration = 10F;
 
+    [SerializeField] private TimerHeader.SnapshotTimer LastLandingTimer;
     private float TiltLerp = 0F;
 
     protected override void OnStateInitialize()
     {
         Machine.GetFSM.SetState(this.Key);
+
+        Machine.GetActorEventRegistry.Event_ActorLanded += () =>
+        {
+            LastLandingTimer.Stamp(Time.time);
+        };
+
     }
 
     public override void Enter(ActorState prev)
     {
-        Machine.GetActorEventRegistry.Event_ActorLanded?.Invoke();
+        ActorEventRegistry EventRegistry = Machine.GetActorEventRegistry;
+        Transform ModelView = Machine.GetModelView;
+        Animator Animator = Machine.GetAnimator;
+
+        EventRegistry.Event_ActorLanded?.Invoke();
+        EventRegistry.Event_ActorTurn?.Invoke( ModelView.rotation );
 
         TiltLerp = 0F;
-        Machine.GetAnimator.SetTrigger("Land");
-        Machine.GetAnimator.ResetTrigger("Fall");
-        Machine.GetAnimator.SetFloat("Tilt", 0F);
-        Machine.GetAnimator.SetFloat("Time", 0F);
+        Animator.SetTrigger("Land");
+        Animator.ResetTrigger("Fall");
+        Animator.SetFloat("Tilt", 0F);
+        Animator.SetFloat("Time", 0F);
     }
 
     public override void Exit(ActorState next)
     {
-        Machine.GetAnimator.speed = 1F;
+        Animator Animator = Machine.GetAnimator;
+        Animator.ResetTrigger("Land");
+        Animator.SetFloat("Time", 0F);
+        Animator.speed = 1F;
         TiltLerp = 0F;
-        Machine.GetAnimator.ResetTrigger("Land");
-        Machine.GetAnimator.SetFloat("Time", 0F);
     }
 
     public override void Tick(float fdt)
     {
+        ActorEventRegistry EventRegistry = Machine.GetActorEventRegistry;
         Transform ModelView = Machine.GetModelView;
         Transform CameraView = Machine.GetCameraView;
         ActorHeader.Actor Actor = Machine.GetActor;
@@ -113,6 +128,7 @@ public class GroundState : ActorState
                 break;
         }
 
+
         Velocity = ModelView.rotation * new Vector3(0, 0, 1F);
         VectorHeader.CrossProjection(ref Velocity, Vector3.up, Actor.Ground.normal);
 
@@ -120,6 +136,8 @@ public class GroundState : ActorState
 
         Animator.SetFloat("Tilt", TiltLerp);
         Animator.SetFloat("Speed", Speed / MaxMoveSpeed);
+
+        EventRegistry.Event_ActorTurn?.Invoke(ModelView.rotation);
     }
 
     private bool DetermineTransitions(bool XButton, bool SquareTrigger, ActorHeader.Actor Actor)
@@ -130,7 +148,7 @@ public class GroundState : ActorState
             return true;
         }
 
-        if (SquareTrigger)
+        if (SquareTrigger && LastLandingTimer.Check(Time.time))
         {
             if (Machine.GetFSM.TrySwitchState((ActorState next) =>
             {

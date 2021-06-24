@@ -39,7 +39,7 @@ public class PlayerInput : MonoBehaviour
         SquareTrigger = new InputTrigger();
 
         // public delegate void Command(string[] modifiers, out string output);
-        MonoConsole.InsertCommand("mouse_state", Func_MouseMode);
+        MonoConsole.InsertCommand("ms", Func_MouseMode);
         MonoConsole.InsertToggleListener(Func_ConsoleToggled);
     }
 
@@ -79,23 +79,23 @@ public class PlayerInput : MonoBehaviour
     // delegate ConsoleHeader.Command
     void Func_MouseMode(string[] modifiers, out string output)
     {
-        if (modifiers.Length > 0)
+        if (modifiers.Length > 1)
         {
-            output = "";
+            output = "error: invalid input on mouse state";
             switch (modifiers[0])
             {
-                case "CONFINED":
-                case "2\r":
+                case "-CONFINED":
+                case "-2":
                     Cursor.lockState = CursorLockMode.Confined;
                     output = "Cursor state is now confined";
                     break;
-                case "LOCKED":
-                case "1\r":
+                case "-LOCKED":
+                case "-1":
                     Cursor.lockState = CursorLockMode.Locked;
                     output = "Cursor state is now locked";
                     break;
-                case "FREE":
-                case "0\r":
+                case "-FREE":
+                case "-0":
                     Cursor.lockState = CursorLockMode.None;
                     output = "Cursor state is now free";
                     break;

@@ -81,6 +81,7 @@ public class CameraMachine : MonoBehaviour
     public ActorEventRegistry GetEventRegistry => ActorEventRegistry;
 
     public Vector3 ViewPosition => ViewTransform.position;
+    public Quaternion ViewRotation => ViewTransform.rotation;
 
     public void OrbitAroundTarget(Vector2 Input)
     {
