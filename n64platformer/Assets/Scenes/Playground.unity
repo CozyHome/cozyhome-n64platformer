@@ -1688,7 +1688,6 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   MaxTurnTime: 0.5
-  AngularDivider: 0.5
 --- !u!114 &963194232
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -52,11 +52,11 @@ public class GroundState : ActorState
         EventRegistry.Event_ActorLanded?.Invoke();
         EventRegistry.Event_ActorTurn?.Invoke( ModelView.rotation );
 
-        TiltLerp = 0F;
         Animator.SetTrigger("Land");
         Animator.ResetTrigger("Fall");
         Animator.SetFloat("Tilt", 0F);
         Animator.SetFloat("Time", 0F);
+        TiltLerp = 0F;
     }
 
     public override void Exit(ActorState next)
@@ -91,53 +91,49 @@ public class GroundState : ActorState
 
         if (DetermineTransitions(XButton, SquareTrigger, Actor))
             return;
-
-        switch (GetWalkType(JoystickAmount))
+        else
         {
-            case WalkType.Idle:
+            switch (GetWalkType(JoystickAmount))
+            {
+                case WalkType.Idle:
 
-                if (JoystickAmount > 0.125F)
-                    ModelView.rotation = Quaternion.LookRotation(Move, Vector3.up);
+                    if (JoystickAmount > 0.125F)
+                        ModelView.rotation = Quaternion.LookRotation(Move, Vector3.up);
 
-                Speed -= DeaccelerationCurve.Evaluate(Ratio) * fdt * MoveAcceleration;
-                Speed = Mathf.Max(Speed, 0F);
-                NewTilt = 0F;
+                    Speed -= DeaccelerationCurve.Evaluate(Ratio) * fdt * MoveAcceleration;
+                    Speed = Mathf.Max(Speed, 0F);
+                    NewTilt = 0F;
 
-                Animator.speed = 1F;
+                    Animator.speed = 1F;
+                    break;
+                case WalkType.Walk:
 
-                break;
-            case WalkType.Walk:
+                    NewTilt = MoveRotate(Move, MaxRotateSpeed * fdt);
+                    Speed = Mathf.Lerp(Speed, JoystickAmount * MaxMoveSpeed, WalkAcceleration * JoystickAmount * fdt);
 
-                NewTilt = MoveRotate(Move, MaxRotateSpeed * fdt);
-                Speed = Mathf.Lerp(Speed, JoystickAmount * MaxMoveSpeed, WalkAcceleration * JoystickAmount * fdt);
+                    Animator.speed = 1F;
+                    break;
+                case WalkType.Run:
 
-                Animator.speed = 1F;
+                    NewTilt = MoveRotate(Move, RunRotationalCurve.Evaluate(Ratio) * MaxRotateSpeed * fdt);
+                    TiltLerp = Mathf.Lerp(TiltLerp, NewTilt, TiltSpeedVelocity * fdt);
 
-                break;
+                    Speed += AccelerationCurve.Evaluate(Ratio) * fdt * MoveAcceleration;
+                    Speed = Mathf.Min(Speed, MaxMoveSpeed);
 
-            case WalkType.Run:
+                    Animator.speed = AnimatorSpeedCurve.Evaluate(Ratio) + (Mathf.Abs(TiltLerp) * TiltSpeedInfluence);
+                    break;
+            }
 
-                NewTilt = MoveRotate(Move, RunRotationalCurve.Evaluate(Ratio) * MaxRotateSpeed * fdt);
-                TiltLerp = Mathf.Lerp(TiltLerp, NewTilt, TiltSpeedVelocity * fdt);
+            Velocity = ModelView.rotation * new Vector3(0, 0, 1F);
+            VectorHeader.CrossProjection(ref Velocity, Vector3.up, Actor.Ground.normal);
+            Actor.SetVelocity(Velocity * Speed);
 
-                Speed += AccelerationCurve.Evaluate(Ratio) * fdt * MoveAcceleration;
-                Speed = Mathf.Min(Speed, MaxMoveSpeed);
+            Animator.SetFloat("Tilt", TiltLerp);
+            Animator.SetFloat("Speed", Speed / MaxMoveSpeed);
 
-                Animator.speed = AnimatorSpeedCurve.Evaluate(Ratio) + (Mathf.Abs(TiltLerp) * TiltSpeedInfluence);
-
-                break;
+            EventRegistry.Event_ActorTurn?.Invoke(ModelView.rotation);
         }
-
-
-        Velocity = ModelView.rotation * new Vector3(0, 0, 1F);
-        VectorHeader.CrossProjection(ref Velocity, Vector3.up, Actor.Ground.normal);
-
-        Actor.SetVelocity(Velocity * Speed);
-
-        Animator.SetFloat("Tilt", TiltLerp);
-        Animator.SetFloat("Speed", Speed / MaxMoveSpeed);
-
-        EventRegistry.Event_ActorTurn?.Invoke(ModelView.rotation);
     }
 
     private bool DetermineTransitions(bool XButton, bool SquareTrigger, ActorHeader.Actor Actor)
@@ -147,36 +143,29 @@ public class GroundState : ActorState
             Machine.GetFSM.SwitchState("Fall");
             return true;
         }
-
-        if (SquareTrigger && LastLandingTimer.Check(Time.time))
+        else if (SquareTrigger && LastLandingTimer.Check(Time.time))
         {
             if (Machine.GetFSM.TrySwitchState((ActorState next) =>
             {
                 return ((DiveState)next).CheckDiveEligiblity();
             }, "Dive"))
-                return true;
+            return true;
         }
-
-        if (XButton)
+        else if (XButton)
         {
             Machine.GetFSM.SwitchState(
                 (ActorState next) =>
                 {
                     ((JumpState)next).PrepareDefault();
                 }, "Jump");
-
             return true;
         }
 
         return false;
     }
 
-    public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)
-    { }
-
-    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
-    { }
-
+    public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask) { }
+    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity) { }
     private float MoveRotate(Vector3 move, float rate)
     {
         Quaternion Old = Machine.GetModelView.rotation;

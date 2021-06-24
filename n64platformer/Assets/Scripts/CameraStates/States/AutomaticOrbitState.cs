@@ -67,18 +67,24 @@ public class AutomaticOrbitState : CameraState
         {
             Vector3 v1 = ActorLastRotation * Vector3.right;
             Vector3 v2 = CameraRotation * Vector3.right;
-            //VectorHeader.ClipVector(ref v2, Vector3.up);
-            //v2.Normalize();
-
+            
             // Get the larger sign..?
-            float dot = Vector3.SignedAngle(v2,v1, Vector3.up);
-            Rotate[0] = dot;
-            Debug.Log(Rotate[0]);
-            //dot += 1;
-            //dot /= 2;
-            //dot *= 90F;
+            float angle = Vector3.SignedAngle(v2,v1, Vector3.up);
+            Debug.Log(angle);
+            if (Mathf.Abs(angle) >= 178F)
+                Rotate[0] = 0F;
+            else
+                Rotate[0] = angle;
 
-            ActorLastRotation = Quaternion.identity;
+            // if angle >= 175F, maybe make a new temporary state that does the following:
+            // reconstruct our look rotation based on our displacement..?
+            // instead have our look rotation constantly pointing toward the player..?
+
+            // only problem is if we're continually altering our rotation here, the player
+            // will continually base its movement coordinate plane on this..
+            // this causes an infinite "spinning" effect that i'm trying to avoid entirely.
+            // I think the temporary fix of having the player only rotate <= epsilon is a good temp
+            // solution
         }
 
        // if (absAngle >= 175F)
@@ -97,7 +103,7 @@ public class AutomaticOrbitState : CameraState
         float rate = EasingCurve.Evaluate(TurnTime / MaxTurnTime);
         rate *= (fdt); // remvoe fdt since rotate quaternion is already using fdt
 
-        Machine.OrbitAroundTarget(Rotate * rate); 
+        Machine.OrbitAroundTarget(Rotate * fdt); 
         Machine.ApplyOrbitPosition();
     }
 
