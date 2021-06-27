@@ -69,12 +69,17 @@ public class AutomaticOrbitState : CameraState
             Vector3 v2 = CameraRotation * Vector3.right;
             
             // Get the larger sign..?
+            /*
+             * 
             float angle = Vector3.SignedAngle(v2,v1, Vector3.up);
-            Debug.Log(angle);
-            if (Mathf.Abs(angle) >= 178F)
+            if (Mathf.Abs(angle) >= 90F &&
+                Mathf.Sign(angle) != Mathf.Sign(LastRotate))
                 Rotate[0] = 0F;
             else
                 Rotate[0] = angle;
+            
+            LastRotate = angle;
+            */
 
             // if angle >= 175F, maybe make a new temporary state that does the following:
             // reconstruct our look rotation based on our displacement..?
@@ -103,7 +108,7 @@ public class AutomaticOrbitState : CameraState
         float rate = EasingCurve.Evaluate(TurnTime / MaxTurnTime);
         rate *= (fdt); // remvoe fdt since rotate quaternion is already using fdt
 
-        Machine.OrbitAroundTarget(Rotate * fdt); 
+        Machine.OrbitAroundTarget(Rotate * rate); /* Redo this */
         Machine.ApplyOrbitPosition();
     }
 

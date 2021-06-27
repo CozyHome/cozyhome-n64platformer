@@ -1,9 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using com.cozyhome.Singleton;
+using com.cozyhome.Systems;
+using com.cozyhome.Console;
 using com.cozyhome.Actors;
-using System;
 
 public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
 {
@@ -24,6 +26,8 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
     private ExecutionChain<ExecutionHeader.Actor.ExecutionIndex, ActorMiddleman> MainChain;
     void Start()
     {
+        MonoConsole.InsertCommand("act_sw", Func_ActorSwitchState);
+
         /* Reference Initialization */
         FSM = new MonoFSM<string, ActorState>();
         MainChain = new ExecutionChain<ExecutionHeader.Actor.ExecutionIndex, ActorMiddleman>(MainMiddleman);
@@ -75,6 +79,21 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
     public Animator GetAnimator => Animator;
     public ActorHeader.Actor GetActor => PlayerActor;
     public PlayerInput GetPlayerInput => PlayerInput;
+
+    public void Func_ActorSwitchState(string[] modifiers, out string output)
+    {
+        output = "failed to switch state";
+
+        if (modifiers.Length >= 1)
+        {
+            if (string.IsNullOrEmpty(modifiers[0]))
+                return;
+            else if (FSM.TrySwitchState((ActorState state) => state != null, modifiers[0]))
+                    output = "actor state successfully switched to " + modifiers[0];
+
+            return;
+        }
+    }
 }
 
 [System.Serializable]

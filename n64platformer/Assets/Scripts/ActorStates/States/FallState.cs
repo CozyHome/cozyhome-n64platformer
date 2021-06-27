@@ -26,6 +26,8 @@ public class FallState : ActorState
         Transform ModelView = Machine.GetModelView;
         Vector3 Velocity = Actor.velocity;
 
+        bool SquareTrigger = Machine.GetPlayerInput.GetSquareTrigger;
+
         /* Continual Ledge Detection  */
         if (ActorStateHeader.Transitions.CheckGeneralLedgeTransition(
             Actor.position,
@@ -34,9 +36,14 @@ public class FallState : ActorState
             LedgeRegistry,
             Machine))
             return;
-        else if(Actor.Ground.stable)
+        else if (Actor.Ground.stable)
         {
             Machine.GetFSM.SwitchState("Ground");
+            return;
+        }
+        else if (SquareTrigger)
+        {
+            Machine.GetFSM.SwitchState("Dive");
             return;
         }
         else

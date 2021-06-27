@@ -120,6 +120,9 @@ public static class ActorStateHeader
         {
             if (!ledgehit.IsHit)
             {
+                Transform ModelView = Machine.GetModelView;
+                ModelView.rotation *= Quaternion.AngleAxis(180F, Vector3.up);
+
                 Machine.GetFSM.SwitchState("Fall");
                 return true;
             }

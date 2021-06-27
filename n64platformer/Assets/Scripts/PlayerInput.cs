@@ -28,8 +28,8 @@ public class PlayerInput : MonoBehaviour
     [SerializeField] private bool RawSquareButton = false;
     [SerializeField] private bool RawLeftTrigger = false;
 
-    private InputTrigger XTrigger;
-    private InputTrigger SquareTrigger;
+    [SerializeField] private InputTrigger XTrigger;
+    [SerializeField] private InputTrigger SquareTrigger;
 
     private bool ConsoleActive;
 
@@ -79,22 +79,22 @@ public class PlayerInput : MonoBehaviour
     // delegate ConsoleHeader.Command
     void Func_MouseMode(string[] modifiers, out string output)
     {
-        if (modifiers.Length > 1)
+        if (modifiers.Length >= 1 && string.IsNullOrEmpty(modifiers[0]))
         {
             output = "error: invalid input on mouse state";
             switch (modifiers[0])
             {
-                case "-CONFINED":
+                case "-c":
                 case "-2":
                     Cursor.lockState = CursorLockMode.Confined;
                     output = "Cursor state is now confined";
                     break;
-                case "-LOCKED":
+                case "-l":
                 case "-1":
                     Cursor.lockState = CursorLockMode.Locked;
                     output = "Cursor state is now locked";
                     break;
-                case "-FREE":
+                case "-f":
                 case "-0":
                     Cursor.lockState = CursorLockMode.None;
                     output = "Cursor state is now free";
@@ -121,9 +121,10 @@ public class PlayerInput : MonoBehaviour
 
 // Consume: If input press is true, return true and turn it off afterwards
 // Attack: The length of how long the input buffering will last.
-
+[System.Serializable]
 public class InputTrigger
 {
+    [SerializeField] private float AttackLength = (10F / 60F);
     private bool Consumed, Active, LastRaw = false;
     private float Attack = (10F / 60F);
 

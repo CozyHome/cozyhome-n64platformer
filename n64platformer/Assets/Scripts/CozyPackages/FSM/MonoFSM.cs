@@ -57,6 +57,9 @@ public class MonoFSM<T1, T2> where T2 : MonoFSM<T1, T2>.IMonoState
 
     public bool TrySwitchState(Func<T2, bool> query, T1 nextkey)
     {
+        if (!StateRegistry.ContainsKey(nextkey))
+            return false;
+
         T2 next = StateRegistry[nextkey];
         
         if(!query.Invoke(next))

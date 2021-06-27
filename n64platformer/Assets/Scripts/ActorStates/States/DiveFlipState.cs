@@ -27,8 +27,11 @@ public class DiveFlipState : ActorState
         Velocity[1] = 0F;
         Velocity[1] = Velocity.magnitude;
 
-        for (int i = 0; i < 3; i += 2)
-            Velocity[i] *= (HorizontalVelocity / Velocity[1]);
+        if(Velocity[1] != 0F)
+        {
+            for (int i = 0; i < 3; i += 2)
+                Velocity[i] *= (HorizontalVelocity / Velocity[1]);
+        }
 
         InitYVelocity = Velocity[1] = Mathf.Sqrt(2F * FlipHeight * PlayerVars.GRAVITY);
         Actor.SetVelocity(Velocity);
