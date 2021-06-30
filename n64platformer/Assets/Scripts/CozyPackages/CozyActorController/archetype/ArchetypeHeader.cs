@@ -139,9 +139,9 @@ namespace com.cozyhome.Archetype
 
         private static readonly float[] TRACEBIAS = new float[4]
         {
-            0.002F, // sphere
-            0.002F, // capsule
-            0.002F, // box
+            0.0002F, // sphere
+            0.0002F, // capsule
+            0.0002F, // box
             0.0F // line
         };
 

@@ -56,9 +56,8 @@ public class WallJumpState : ActorState
     public override void Exit(ActorState next) { }
 
     public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask) { }
-
-    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity) { }
-
+    public override void OnTraceHit(ActorHeader.TraceHitType tracetype, RaycastHit trace, Vector3 position, Vector3 velocity) { }
+    public override void OnTriggerHit(ActorHeader.TriggerHitType triggertype, Collider trigger) { }
     public override void Tick(float fdt)
     {
         LedgeRegistry LedgeRegistry = Machine.GetLedgeRegistry;

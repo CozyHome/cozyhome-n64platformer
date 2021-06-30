@@ -1,4 +1,5 @@
 using com.cozyhome.Actors;
+using com.cozyhome.Timers;
 using com.cozyhome.Vectors;
 using UnityEngine;
 
@@ -17,9 +18,9 @@ public class MantleState : ActorState
     [Header("Animation Data")]
     [SerializeField] private AnimationMoveBundle AnimationMoveBundle;
 
+    [SerializeField] private TimerHeader.DeltaTimer AnimationTimer;
     private Vector3 Displacement;
     private MantleType MantleType;
-    private float TotalAnimationLength, AnimationElapsed;
 
     public void Prepare(Vector3 hang_position, Vector3 mantle_position) /* Called when player presses XButton in LedgeState */
     {
@@ -31,7 +32,7 @@ public class MantleState : ActorState
 
     public override void Enter(ActorState prev)
     {
-        AnimationElapsed = 0F;
+        AnimationTimer.Reset();
 
         ActorHeader.Actor Actor = Machine.GetActor;
         Animator Animator = Machine.GetAnimator;
@@ -48,11 +49,11 @@ public class MantleState : ActorState
         {
             case MantleType.Fast:
                 Animator.SetInteger("Step", 1);
-                TotalAnimationLength = (1F / 2F);
+                AnimationTimer.Max(1F / 2F);
                 break;
             case MantleType.Slow:
                 Animator.SetInteger("Step", 2);
-                TotalAnimationLength = (1F / 1.33F);
+                AnimationTimer.Max(1F / 1.33F);
                 break;
         }
 
@@ -74,28 +75,29 @@ public class MantleState : ActorState
     }
 
     public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask) { }
-
-    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity) { }
-
+    public override void OnTraceHit(ActorHeader.TraceHitType tracetype, RaycastHit trace, Vector3 position, Vector3 velocity) { }
+    public override void OnTriggerHit(ActorHeader.TriggerHitType triggertype, Collider trigger) { }
     public override void Tick(float fdt)
     {
         Transform ModelView = Machine.GetModelView;
         Animator Animator = Machine.GetAnimator;
         ActorHeader.Actor Actor = Machine.GetActor;
 
-        if (Actor.Ground.stable && AnimationElapsed >= TotalAnimationLength)
+        if (Actor.Ground.stable && AnimationTimer.Check())
         {
             Machine.GetFSM.SwitchState("Ground");
             Actor.SetVelocity(Vector3.zero);
             return;
         }
         else
-            AnimationElapsed += fdt;
+            AnimationTimer.Accumulate(fdt);
 
         Vector3 AnimationVelocity = AnimationMoveBundle.GetRootDisplacement(fdt);
         AnimationMoveBundle.Clear();
 
-        /* To give the player the ability to land on the platform in front of them, we'll apply an inward velocity every frame */
+        if (AnimationTimer.Elapsed > 0F && Mathf.Abs(AnimationVelocity[1]) <= 0.01F) // lingering but zero
+            AnimationVelocity[1] = -5F; // move downward linearly (could accumulate gravity) would add more logic then necessary though
+
         Actor.SetVelocity(AnimationVelocity);
 
     }

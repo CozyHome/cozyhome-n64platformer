@@ -36,7 +36,7 @@ public class LedgeState : ActorState
 
     public void Prepare(Vector3 position, Vector3 newposition)
     {
-        const float height_percentage = 0.8F;
+        float height_percentage = 1F;
 
         Animator Animator = Machine.GetAnimator;
         Animator.SetInteger("Step", 0); // clear for mantle state
@@ -79,5 +79,6 @@ public class LedgeState : ActorState
         }
     }
     public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask) { }
-    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity) { }
+    public override void OnTraceHit(ActorHeader.TraceHitType tracetype, RaycastHit trace, Vector3 position, Vector3 velocity) { }
+    public override void OnTriggerHit(ActorHeader.TriggerHitType triggertype, Collider trigger) { }
 }

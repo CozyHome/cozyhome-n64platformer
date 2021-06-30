@@ -124,12 +124,17 @@ namespace com.cozyhome.Debugging
             LayerMask _gfilter)
         { }
 
-        public void OnTraceHit(RaycastHit _trace, Vector3 _position, Vector3 _velocity)
+        public void OnTraceHit(ActorHeader.TraceHitType type, RaycastHit _trace, Vector3 _position, Vector3 _velocity)
         {
             bool _stbl = _Actor.DeterminePlaneStability(_trace.normal, _trace.collider);
 
             if (_stbl)
                 _Actor.SetSnapEnabled(true);
+        }
+
+        public void OnTriggerHit(ActorHeader.TriggerHitType triggertype, Collider trigger)
+        {
+            Debug.Log(trigger.name);
         }
     }
 

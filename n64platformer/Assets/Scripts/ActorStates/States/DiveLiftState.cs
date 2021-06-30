@@ -28,5 +28,9 @@ public class DiveLiftState : ActorState
 
     protected override void OnStateInitialize() { }
     public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask) { }
-    public override void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity) { }
+    public override void OnTraceHit(ActorHeader.TraceHitType tracetype, RaycastHit trace, Vector3 position, Vector3 velocity)
+    { }
+
+    public override void OnTriggerHit(ActorHeader.TriggerHitType triggertype, Collider trigger)
+    { }
 }

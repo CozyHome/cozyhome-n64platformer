@@ -12,6 +12,7 @@ namespace com.cozyhome.Timers
             private float elapsed;
             public void Reset() => elapsed = 0.0F;
             public void Accumulate(float dt) => elapsed += dt;
+            public void Max(float newmax) => TotalElapsedTime = newmax;
             public bool Check() => elapsed > TotalElapsedTime;
             public float Elapsed => elapsed;
             public float NormalizedElapsed => (elapsed / TotalElapsedTime);

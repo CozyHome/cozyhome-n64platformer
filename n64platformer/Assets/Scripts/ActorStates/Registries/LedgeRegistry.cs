@@ -121,6 +121,7 @@ public class LedgeRegistry : MonoBehaviour
             /* Valid Primitive Trace */
             ledgehit.LedgeStatus |= HIT_PRIMIVITE_LEDGETRACE;
             ValidateLedge(
+                        skin,
                         InternalHits[i0].distance,
                         InternalHits[i0].normal,
                         InternalHits[i0].point,
@@ -131,6 +132,7 @@ public class LedgeRegistry : MonoBehaviour
     }
 
     public void ValidateLedge(
+        float skin,
         float dist,
         Vector3 normal,
         Vector3 point, // referring to trace point
@@ -184,7 +186,7 @@ public class LedgeRegistry : MonoBehaviour
 
                 ledgehit.LedgeStatus |= VALID_LINE_LEDGETRACE;
 
-                ledgehit.LedgeDelta[0] = -(min_hoffset) + ledgehit.AuxillaryDelta[0];
+                ledgehit.LedgeDelta[0] = -(min_hoffset + skin) + ledgehit.AuxillaryDelta[0];
                 ledgehit.LedgeDelta[1] = (height + min_voffset);
 
                 ledgehit.LedgeUpwardNormal = floorinfo.normal;

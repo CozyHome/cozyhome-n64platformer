@@ -95,8 +95,8 @@ namespace com.cozyhome.Actors
             [Tooltip("A Bitmask to help you filter out specific sets of colliders you want this actor to ignore during its movement.")]
             [SerializeField] protected LayerMask _filter;
 
-            private GroundHit _groundhit = new GroundHit();
-            private GroundHit _lastgroundhit = new GroundHit();
+            private GroundHit _groundhit;
+            private GroundHit _lastgroundhit;
 
             [System.NonSerialized] protected readonly RaycastHit[] _internalhits = new RaycastHit[ActorHeader.MAX_HITS];
 
@@ -104,13 +104,19 @@ namespace com.cozyhome.Actors
 
             [System.NonSerialized] protected readonly Vector3[] _internalnormals = new Vector3[ActorHeader.MAX_OVERLAPS];
 
+            /* 
+             * I'm keeping these public so you can do whatever you'd like. I'm not necessarily concerned with how you're updating any of these things.
+               Whatever you do though, don't update them inside of an IActorReceiver callback. Those callbacks are intended to be for response and are simply
+               for information and state handling. If anything, implement a command pattern where you respond to these callbacks inside of your pulse or update
+               loop somewhere. This will keep the actor's state information outside of its movement call. (Changing the Actor's velocity mid-trace will cause 
+               ambiguous/undefined behaviour!!!)
+            */
             [System.NonSerialized] public Vector3 position;
             [System.NonSerialized] public Vector3 velocity;
             [System.NonSerialized] public Quaternion orientation;
 
             public RaycastHit[] Hits => _internalhits;
             public Collider[] Colliders => _internalcolliders;
-            public Vector3[] Normals => _internalnormals;
             public bool IsSnapEnabled => SnapEnabled;
             public MoveType GetMoveType => MoveType;
             public SlideSnapType GetSnapType => SnapType;
@@ -140,16 +146,22 @@ namespace com.cozyhome.Actors
             void Start()
             {
                 if (InitializeOnStart)
-                {
-                    InitializeGenerics();
-                    InitializeSpecifics();
-                }
+                    InitializeActor(transform);
             }
 
-            private void InitializeGenerics() /* a kind of default ctor */
+            public void InitializeActor(Transform _transform)
             {
-                SetPosition(transform.position);
-                SetOrientation(transform.rotation);
+                InitializeTransforms(_transform);
+                InitializeSpecifics();
+            }
+
+            private void InitializeTransforms(Transform _transform) /* a kind of default ctor */
+            {
+                _groundhit = new GroundHit();
+                _lastgroundhit = new GroundHit();
+
+                SetPosition(_transform.position);
+                SetOrientation(_transform.rotation);
                 SetVelocity(Vector3.zero);
             }
 
@@ -187,12 +199,12 @@ namespace com.cozyhome.Actors
             /* archetype buffers & references */
             Vector3 lastplane = Vector3.zero;
 
+            QueryTriggerInteraction querytype = QueryTriggerInteraction.Collide;
             ArchetypeHeader.Archetype archetype = actor.GetArchetype();
             Collider self = archetype.Collider();
             Collider[] colliderbuffer = actor.Colliders;
             LayerMask layermask = actor.Mask;
 
-            Vector3[] normalsbuffer = actor.Normals;
             RaycastHit[] tracesbuffer = actor.Hits;
 
             /* tracing values */
@@ -202,6 +214,7 @@ namespace com.cozyhome.Actors
             int numbumps = 0;
             int numpushbacks = 0;
             int geometryclips = 0;
+            Vector3 last = Vector3.zero;
 
             /* attempt an overlap pushback at this current position */
             while (numpushbacks++ < ActorHeader.MAX_PUSHBACKS)
@@ -211,12 +224,12 @@ namespace com.cozyhome.Actors
                     orientation,
                     layermask,
                     /* inflate */ 0F,
-                    QueryTriggerInteraction.Ignore,
+                    _interacttype: querytype,
                     colliderbuffer,
                     out int numoverlaps);
 
                 /* filter ourselves out of the collider buffer */
-                ArchetypeHeader.OverlapFilters.FilterSelf(ref numoverlaps, self, colliderbuffer);
+                FilterHeader.ActorOverlapFilter(_rec, ref numoverlaps, self, colliderbuffer);
 
                 if (numoverlaps == 0) // nothing !
                     break;
@@ -238,7 +251,7 @@ namespace com.cozyhome.Actors
                             out float mindistance))
                         {
                             /* resolve pushback using closest exit distance */
-                            position += normal * (mindistance + skin);
+                            position += normal * (mindistance + MIN_PUSHBACK_DEPTH);
 
                             /* only consider normals that we are technically penetrating into */
                             if (VectorHeader.Dot(velocity, normal) < 0F)
@@ -249,6 +262,9 @@ namespace com.cozyhome.Actors
                     }
                 }
             }
+
+            // We must assume that our position is valid.
+            actor.SetPosition(position);
 
             while (numbumps++ <= ActorHeader.MAX_BUMPS && timefactor > 0)
             {
@@ -271,11 +287,12 @@ namespace com.cozyhome.Actors
                     orientation,
                     layermask,
                     0F,
-                    QueryTriggerInteraction.Ignore,
+                    _interacttype: querytype,
                     tracesbuffer,
                     out int _tracecount);
 
-                    ArchetypeHeader.TraceFilters.FindClosestFilterInvalids(
+                    FilterHeader.ActorTraceFilter(
+                        _rec,
                         ref _tracecount,
                         out int _i0,
                         ArchetypeHeader.GET_TRACEBIAS(archetype.PrimitiveType()),
@@ -304,9 +321,27 @@ namespace com.cozyhome.Actors
                 }
             }
 
-            actor.SetPosition(position);
+            /* Safety check to prevent multiple actors phasing through each other... Feel free to disable this for performance if you'd like*/
+            archetype.Overlap(
+                    position,
+                    orientation,
+                    layermask,
+                    /* inflate */ 0F,
+                    _interacttype: querytype,
+                    colliderbuffer,
+                    out int safetycount);
+
+            /* filter ourselves out of the collider buffer, no need to check for triggers */
+            ArchetypeHeader.OverlapFilters.FilterSelf(ref safetycount, self, colliderbuffer);
+
+            if(safetycount == 0)
+                actor.SetPosition(position);
+
             actor.SetVelocity(velocity);
         }
+
+        /* Not used anymore */
+        private static bool PM_IsActor(Collider otherc) => otherc.GetComponent<Actor>() != null;
 
         private static void PM_FlyDetermineImmediateGeometry(
             ref Vector3 velocity,
@@ -383,15 +418,14 @@ namespace com.cozyhome.Actors
             Vector3 velocity = actor.velocity;
             Quaternion orientation = actor.orientation;
 
-
             /* archetype buffers & references */
+            QueryTriggerInteraction querytype = QueryTriggerInteraction.Collide;
             ArchetypeHeader.Archetype archetype = actor.GetArchetype();
             Collider self = archetype.Collider();
             SlideSnapType snaptype = actor.GetSnapType;
             Collider[] colliderbuffer = actor.Colliders;
             LayerMask layermask = actor.Mask;
 
-            Vector3[] normalsbuffer = actor.Normals;
             RaycastHit[] tracebuffer = actor.Hits;
 
             /* ground trace values */
@@ -430,7 +464,7 @@ namespace com.cozyhome.Actors
             */
 
             /* feel free to change these values, I think they're pretty decent atm */
-            float gtracelen = (lastground.stable && lastground.snapped) ? 0.075F : 0.05F;
+            float gtracelen = (lastground.stable && lastground.snapped) ? MAX_GROUNDQUERY : MIN_GROUNDQUERY;
 
             while (numgroundbumps++ < MAX_GROUNDBUMPS &&
                 gtracelen > 0F)
@@ -557,7 +591,7 @@ namespace com.cozyhome.Actors
                             if (VectorHeader.Dot(velocity, forw) <= 0F)
                             {
                                 if (VectorHeader.Dot(velocity, snaptrace.normal) < 0F)
-                                    receiver.OnTraceHit(snaptrace, gposition, velocity);
+                                    receiver.OnTraceHit(TraceHitType.Ceiling, snaptrace, gposition, velocity);
 
                                 geometryclips |= (1 << 1);
                                 VectorHeader.ProjectVector(ref velocity, crease);
@@ -639,11 +673,12 @@ namespace com.cozyhome.Actors
                     orientation,
                     layermask,
                     /* inflate */ 0F,
-                    QueryTriggerInteraction.Ignore,
+                    _interacttype: querytype,
                     colliderbuffer,
                     out int numoverlaps);
 
-                ArchetypeHeader.OverlapFilters.FilterSelf(
+                FilterHeader.ActorOverlapFilter(
+                    receiver,
                     ref numoverlaps,
                     self,
                     colliderbuffer);
@@ -657,9 +692,16 @@ namespace com.cozyhome.Actors
                         Collider otherc = colliderbuffer[_colliderindex];
                         Transform othert = otherc.GetComponent<Transform>();
 
-                        if (Physics.ComputePenetration(self, position, orientation, otherc, othert.position, othert.rotation, out Vector3 _normal, out float _distance))
+                        if (Physics.ComputePenetration(self,
+                            position,
+                            orientation,
+                            otherc,
+                            othert.position,
+                            othert.rotation,
+                            out Vector3 _normal,
+                            out float _distance))
                         {
-                            position += _normal * (_distance + skin);
+                            position += _normal * (_distance + MIN_PUSHBACK_DEPTH);
 
                             PM_SlideDetermineImmediateGeometry(ref velocity,
                                 ref lastplane,
@@ -674,6 +716,7 @@ namespace com.cozyhome.Actors
                     }
                 }
             }
+            actor.SetPosition(position);
 
             while (numbumps++ < ActorHeader.MAX_BUMPS
                   && timefactor > 0)
@@ -693,11 +736,12 @@ namespace com.cozyhome.Actors
                         orientation,
                         layermask,
                         0F,
-                        QueryTriggerInteraction.Ignore,
+                        _interacttype: querytype,
                         tracebuffer,
                         out int _tracecount);
 
-                    ArchetypeHeader.TraceFilters.FindClosestFilterInvalids(
+                    FilterHeader.ActorTraceFilter(
+                        receiver,
                         ref _tracecount,
                         out int _i0,
                         bias,
@@ -721,7 +765,7 @@ namespace com.cozyhome.Actors
                         float _dis = _closest.distance - skin;
                         position += (_trace / _tracelen) * _dis; // move back along the trace line!
 
-                        receiver.OnTraceHit(_closest, position, velocity);
+                        receiver.OnTraceHit(TraceHitType.Trace, _closest, position, velocity);
 
                         PM_SlideDetermineImmediateGeometry(ref velocity,
                                 ref lastplane,
@@ -737,7 +781,22 @@ namespace com.cozyhome.Actors
                 }
             }
 
-            actor.SetPosition(position);
+            /* Safety check to prevent multiple actors phasing through each other... Feel free to disable this for performance if you'd like*/
+            archetype.Overlap(
+                    position,
+                    orientation,
+                    layermask,
+                    /* inflate */ 0F,
+                    QueryTriggerInteraction.Ignore,
+                    colliderbuffer,
+                    out int safetycount);
+
+            /* filter ourselves out of the collider buffer, no need to check for triggers */
+            ArchetypeHeader.OverlapFilters.FilterSelf(ref safetycount, self, colliderbuffer);
+
+            if (safetycount == 0)
+                actor.SetPosition(position);
+
             actor.SetVelocity(velocity);
         }
 
@@ -865,16 +924,14 @@ namespace com.cozyhome.Actors
             Vector3 velocity = actor.velocity;
             Quaternion orientation = actor.orientation;
 
-
             /* archetype buffers & references */
+            QueryTriggerInteraction querytype = QueryTriggerInteraction.Collide;
             ArchetypeHeader.Archetype archetype = actor.GetArchetype();
             Collider self = archetype.Collider();
             SlideSnapType snaptype = actor.GetSnapType;
             Collider[] overlapbuffer = actor.Colliders;
             LayerMask layermask = actor.Mask;
 
-
-            Vector3[] normalsbuffer = actor.Normals;
             RaycastHit[] tracebuffer = actor.Hits;
 
             /* ground trace values */
@@ -917,8 +974,10 @@ namespace com.cozyhome.Actors
                for the time being this seems to work best.
             */
 
-            /* feel free to change these values, I think they're pretty decent atm */
-            float gtracelen = (lastground.stable && lastground.snapped) ? 0.3F : 0.15F;
+            // if we're grounded, we'd like to stay that way! If we're not grounded, search a smaller distance to prevent
+            // getting snapped to the floor in a visibly noticeable way by the camera. If you're interpolating player movement then
+            // this may not be visible.
+            float gtracelen = (lastground.stable && lastground.snapped) ? MAX_GROUNDQUERY : MIN_GROUNDQUERY;
 
             while (numgroundbumps++ < MAX_GROUNDBUMPS &&
                 gtracelen > 0F)
@@ -944,7 +1003,6 @@ namespace com.cozyhome.Actors
 
                         We compensate this offset by increasing our trace length to traverse
                         the offset distance in addition to our additional length
-
                 */
                 archetype.Trace(gposition + (updir * skin),
                     groundtracedir,
@@ -956,6 +1014,7 @@ namespace com.cozyhome.Actors
                     tracebuffer,
                     out int numgroundtraces);
 
+                //DC
                 /* filter out our archetype and find the closest valid interception */
                 ArchetypeHeader.TraceFilters.FindClosestFilterInvalids(
                     ref numgroundtraces,
@@ -975,11 +1034,11 @@ namespace com.cozyhome.Actors
                     ground.stable = actor.DetermineGroundStability(velocity, _closest, layermask);
                     ground.snapped = false;
 
-                    gposition += groundtracedir * (_closest.distance);
                     /*
                      warp regardless of stablility. We'll only be setting our trace position
                      to our ground trace position if a stable floor has been determined, and snapping is enabled. 
                     */
+                    gposition += groundtracedir * (_closest.distance);
 
                     if (ground.stable)
                     {
@@ -1018,14 +1077,14 @@ namespace com.cozyhome.Actors
                             tracebuffer,
                             out int numupwardbumps);
 
-                        ArchetypeHeader.TraceFilters.FindClosestFilterInvalids(ref numupwardbumps,
+                        ArchetypeHeader.TraceFilters.FindClosestFilterInvalids(
+                            ref numupwardbumps,
                             out int gi,
                             bias,
                             self,
                             tracebuffer);
 
                         /* this part may be a bit confusing to understand */
-
                         /* if a ceiling is discovered: */
                         if (gi >= 0)
                         {
@@ -1045,7 +1104,7 @@ namespace com.cozyhome.Actors
                             if (VectorHeader.Dot(velocity, forw) <= 0F)
                             {
                                 if (VectorHeader.Dot(velocity, ceiltrace.normal) < 0F)
-                                    receiver.OnTraceHit(ceiltrace, gposition, velocity);
+                                    receiver.OnTraceHit(TraceHitType.Ceiling, ceiltrace, gposition, velocity);
 
                                 geometryclips |= (1 << 1);
                                 VectorHeader.ProjectVector(ref velocity, crease);
@@ -1073,14 +1132,10 @@ namespace com.cozyhome.Actors
                         /* 
                          if a snap was valid and allowed, 
                          1. set our position to the snap point 
-                         
-                         2. set our last plane discovered to the ground normal
-                         
+                         2. set our last plane discovered to the ground normal                      
                          3. notify our geometry clipping algorithm that we've hit our first blocking plane
-                         
                          4. clip our velocity along the ground normal as we are effectively skipping the 
                             first iteration of our geometry clipping algorithm
-
                         */
 
                         if (ground.snapped)
@@ -1128,11 +1183,13 @@ namespace com.cozyhome.Actors
                     orientation,
                     layermask,
                     /* inflate */ 0F,
-                    QueryTriggerInteraction.Ignore,
+                    _interacttype: querytype,
                     overlapbuffer,
                     out int numoverlaps);
 
-                ArchetypeHeader.OverlapFilters.FilterSelf(
+                //DC
+                FilterHeader.ActorOverlapFilter(
+                    receiver,
                     ref numoverlaps,
                     self,
                     overlapbuffer);
@@ -1146,6 +1203,12 @@ namespace com.cozyhome.Actors
                         Collider otherc = overlapbuffer[_colliderindex];
                         Transform othert = otherc.GetComponent<Transform>();
 
+                        // another bug: Actor transform data must be set at the same time, not step by step.
+                        // By doing this, we avoid stuttering between other actors
+
+                        // we need an actor system that handles these types of movements
+                        // this would also be a good time to decouple our movement from Unity's magic methods
+
                         if (Physics.ComputePenetration(self, 
                             position, orientation,
                             otherc, 
@@ -1154,14 +1217,14 @@ namespace com.cozyhome.Actors
                             out Vector3 _normal, 
                             out float _distance))
                         {
-                            position += _normal * (_distance + skin);
+                            position += _normal * (_distance + MIN_PUSHBACK_DEPTH);
 
                             PM_SlideDetermineImmediateGeometry(ref velocity,
                                 ref lastplane,
                                 actor.DeterminePlaneStability(_normal, otherc),
                                 _normal,
                                 ground.normal,
-                                ground.stable && ground.snapped,
+                                (ground.stable && ground.snapped),
                                 updir,
                                 ref geometryclips);
                             break;
@@ -1169,6 +1232,7 @@ namespace com.cozyhome.Actors
                     }
                 }
             }
+            actor.SetPosition(position);
 
             while (numbumps++ < ActorHeader.MAX_BUMPS
                   && timefactor > 0)
@@ -1188,11 +1252,13 @@ namespace com.cozyhome.Actors
                         orientation,
                         layermask,
                         0F,
-                        QueryTriggerInteraction.Ignore,
+                        _interacttype: querytype,
                         tracebuffer,
                         out int _tracecount);
 
-                    ArchetypeHeader.TraceFilters.FindClosestFilterInvalids(
+                    //DC
+                    FilterHeader.ActorTraceFilter(
+                        receiver,
                         ref _tracecount,
                         out int _i0,
                         bias,
@@ -1210,39 +1276,21 @@ namespace com.cozyhome.Actors
                         RaycastHit _closest = tracebuffer[_i0]; /* struct buffer so no need to worry about overriding data */
                         Vector3 normal = _closest.normal;
                         Vector3 tracepoint = _closest.point;
-
-
                         float _rto = _closest.distance / _tracelen;
                         timefactor -= _rto;
 
                         float _dis = _closest.distance - skin;
                         position += (_trace / _tracelen) * _dis; // move back along the trace line!
 
-                        /*
-                        if (canstep && !PM_SlideStepValidation(
-                            position,
-                            orientation,
-                            normal,
-                            tracepoint,
-                            archetype,
-                            layermask,
-                            out Vector3 stepposition
-                        ))
-                        {
-                            
-                            continue;
-                        }
-                        else
-                            continue;
+                        /* 
+                         *  only step if the following is true:
+                         *  1. we are grounded
+                         *  2. our step check is valid
                         */
 
-                        Vector3 step_position = Vector3.zero;
-
-                        /* only step if the following is true:
-                            1. we are grounded
-                            2. our step check is valid
-                            */
-
+                        // could potentially optimize this with branching
+                        // by skipping the second AND= and just only doing so 
+                        // if we're grounded
                         canstep &= ground.stable;
                         canstep &= PM_SlideStepValidation(position,
                             orientation,
@@ -1253,11 +1301,11 @@ namespace com.cozyhome.Actors
                             archetype,
                             layermask,
                             stepheight,
-                            out step_position);
+                            out Vector3 step_position);
 
                         if (!canstep)
                         {
-                            receiver.OnTraceHit(_closest, position, velocity);
+                            receiver.OnTraceHit(TraceHitType.Step, _closest, position, velocity);
 
                             PM_SlideDetermineImmediateGeometry(ref velocity,
                                         ref lastplane,
@@ -1277,7 +1325,22 @@ namespace com.cozyhome.Actors
                 }
             }
 
-            actor.SetPosition(position);
+            /* Safety check to prevent multiple actors phasing through each other... Feel free to disable this for performance if you'd like */
+            archetype.Overlap(
+                    position,
+                    orientation,
+                    layermask,
+                    /* inflate */ -MIN_PUSHBACK_DEPTH,
+                    QueryTriggerInteraction.Ignore,
+                    overlapbuffer,
+                    out int safetycount);
+
+            /* filter ourselves out of the collider buffer, no need to check for triggers */
+            ArchetypeHeader.OverlapFilters.FilterSelf(ref safetycount, self, overlapbuffer);
+
+            if (safetycount == 0)
+                actor.SetPosition(position);
+
             actor.SetVelocity(velocity);
         }
 
@@ -1411,32 +1474,55 @@ namespace com.cozyhome.Actors
 
             actor.Ground.Clear();
             actor.LastGround.Clear();
-
             actor.SetPosition(actor.position + actor.velocity * fdt);
         }
 
 
         #endregion
 
+        public enum TraceHitType
+        {
+            Ground = 0, /* Whenever a trace is discovered during our groundward trace */
+            Ceiling = 1, // During our ground trace, we check for ceilings to prevent sliding into creases protruding into the floor
+            Trace = 2, /* Whenever a trace is discovered during our linear trace phase */
+            Step = 3 /* only in PM_SlideStepMove */
+        };
+
+        public enum TriggerHitType
+        {
+            Traced = 0,
+            Overlapped = 1
+        };
+
         // In an effort to remove Actor Object & Callback Object coupling, you'll be required to pass reference to an IActorReceiver interface
         // whenever calling your move funcs as this will allow you to directly respond to information received during any of the Move() executions
         // during tracing/grounding/overlapping.. etc.
         public interface IActorReceiver
         {
+            /* 
+             * Called strictly in our slide implementations to inform end-user when ground is detected, but 
+             * not necessarily if we should be grounded. That's up to you to work out. */
             void OnGroundHit(GroundHit ground, GroundHit lastground, LayerMask layermask);
-            void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity);
+            /* Called a plethora of times in various trace subroutines to inform end-users time of impact information */
+            void OnTraceHit(TraceHitType tracetype, RaycastHit trace, Vector3 position, Vector3 velocity);
+            /* If you'd like to compute information about the closest normal, see Physics.ComputePenetration() inside of my pushback code for easy copy/paste */
+            void OnTriggerHit(TriggerHitType triggertype, Collider trigger);
         }
 
+        public const float MIN_GROUNDQUERY = 0.1F; // distance queried in our ground traces if we weren't grounded the previous simulated step
+        public const float MAX_GROUNDQUERY = 0.3F; // distnace queried in our ground traces if we were grounded in the previous simulation step
+
         public const int MAX_GROUNDBUMPS = 2; // # of ground snaps/iterations in a SlideMove() 
-        public const int MAX_PUSHBACKS = 4; // # of iterations in our Pushback() funcs
+        public const int MAX_PUSHBACKS = 8; // # of iterations in our Pushback() funcs
         public const int MAX_BUMPS = 6; // # of iterations in our Move() funcs
         public const int MAX_HITS = 6; // # of RaycastHit[] structs allocated to
                                        // a hit buffer.
-        public const int MAX_OVERLAPS = 6; // # of Collider classes allocated to a
+        public const int MAX_OVERLAPS = 8; // # of Collider classes allocated to a
                                            // overlap buffer.
         public const float MIN_DISPLACEMENT = 0.001F; // min squared length of a displacement vector required for a Move() to proceed.
         public const float FLY_CREASE_EPSILON = 1F; // minimum distance angle during a crease check to disregard any normals being queried.
         public const float INWARD_STEP_DISTANCE = 0.01F; // minimum displacement into a stepping plane
         public const float MIN_HOVER_DISTANCE = 0.025F;
+        public const float MIN_PUSHBACK_DEPTH = 0.001F;
     }
 }

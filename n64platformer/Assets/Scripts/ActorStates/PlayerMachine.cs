@@ -15,6 +15,7 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
     [SerializeField] private PlayerInput PlayerInput;
     [SerializeField] private LedgeRegistry LedgeRegistry;
 
+    private Vector3 spawnposition;
     private ActorHeader.Actor PlayerActor;
     private Animator Animator;
     private MonoFSM<string, ActorState> FSM;
@@ -26,7 +27,10 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
     private ExecutionChain<ExecutionHeader.Actor.ExecutionIndex, ActorMiddleman> MainChain;
     void Start()
     {
+        spawnposition = transform.position;
+
         MonoConsole.InsertCommand("act_sw", Func_ActorSwitchState);
+        MonoConsole.InsertCommand("act_rpos", Func_ActorResetPosition);
 
         /* Reference Initialization */
         FSM = new MonoFSM<string, ActorState>();
@@ -64,8 +68,11 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
     public void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)
     => FSM.Current.OnGroundHit(ground, lastground, layermask);
 
-    public void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity)
-    => FSM.Current.OnTraceHit(trace, position, velocity);
+    public void OnTraceHit(ActorHeader.TraceHitType tracetype, RaycastHit trace, Vector3 position, Vector3 velocity)
+    => FSM.Current.OnTraceHit(tracetype, trace, position, velocity);
+
+    public void OnTriggerHit(ActorHeader.TriggerHitType triggertype, Collider trigger)
+        => FSM.Current.OnTriggerHit(triggertype, trigger);
 
     public bool ValidGroundTransition(Vector3 normal, Collider collider) => PlayerActor.DeterminePlaneStability(normal, collider);
 
@@ -93,6 +100,11 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
 
             return;
         }
+    }
+    public void Func_ActorResetPosition(string[] modifiers, out string output)
+    {
+        output = "Reset Actor position";
+        this.transform.position = (spawnposition);
     }
 }
 
@@ -131,6 +143,7 @@ public abstract class ActorState : MonoBehaviour,
     public string GetKey => Key;
     public abstract void Tick(float fdt);
     public abstract void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask);
-    public abstract void OnTraceHit(RaycastHit trace, Vector3 position, Vector3 velocity);
+    public abstract void OnTraceHit(ActorHeader.TraceHitType tracetype, RaycastHit trace, Vector3 position, Vector3 velocity);
+    public abstract void OnTriggerHit(ActorHeader.TriggerHitType triggertype, Collider trigger);
     protected abstract void OnStateInitialize();
 }
