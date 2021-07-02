@@ -5,7 +5,7 @@ using UnityEngine;
 [DefaultExecutionOrder(-200)]
 public class CharacterActor : MonoBehaviour, ActorHeader.IActorReceiver, IEntity
 {
-    [SerializeField] private BoxActor Actor;
+    [SerializeField] private ActorHeader.Actor Actor;
 
     void Start()
     {
@@ -14,9 +14,10 @@ public class CharacterActor : MonoBehaviour, ActorHeader.IActorReceiver, IEntity
 
     public void StartFrame()
     {
+        float fdt = Time.fixedDeltaTime;
         Actor.SetPosition(transform.position);
         Actor.SetOrientation(transform.rotation);
-        Actor.SetVelocity(Actor.orientation * Vector3.forward * 10F);
+        Actor.SetVelocity(Actor.orientation * Vector3.forward * 20F);
     }
 
     /* At the moment, CharacterActor placement inside of the ActorSystem will determine who has authority in 
@@ -33,6 +34,8 @@ public class CharacterActor : MonoBehaviour, ActorHeader.IActorReceiver, IEntity
         ActorHeader.Move(this, Actor, fdt);
         transform.SetPositionAndRotation(Actor.position, Actor.orientation);
     }
+
+    // We may want to keep track of our last fixed update transforms for systems like interpolating, etc.
     public void EndFrame() => transform.SetPositionAndRotation(Actor.position, Actor.orientation);
 
     public void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask) { }
