@@ -36,7 +36,7 @@ public class LedgeState : ActorState
 
     public void Prepare(Vector3 position, Vector3 newposition)
     {
-        float height_percentage = 1F;
+        float height_percentage = .75F;
 
         Animator Animator = Machine.GetAnimator;
         Animator.SetInteger("Step", 0); // clear for mantle state

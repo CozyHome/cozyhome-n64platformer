@@ -54,7 +54,12 @@ namespace com.cozyhome.Console
         }
 
         private void InsertCMD(string key, ConsoleHeader.Command command)
-            => Commands?.Add(key.ToLower(), command);
+        {
+            if (Commands.ContainsKey(key))
+                return;
+            else
+                Commands.Add(key.ToLower(), command);
+        }
 
         private void RemoveCMD(string key)
             => Commands?.Remove(key.ToLower());
