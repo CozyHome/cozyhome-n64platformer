@@ -6,6 +6,9 @@ namespace com.cozyhome.Systems
         SystemsHeader.ILateUpdateSystem,
         SystemsHeader.IUpdateSystem
     {
+        [UnityEngine.SerializeField] PlayerMachine p_machine;
+        [UnityEngine.SerializeField] CameraMachine c_machine;
+
         [UnityEngine.SerializeField] short _executionindex = 0;
         public void OnDiscover()
         {
@@ -14,8 +17,17 @@ namespace com.cozyhome.Systems
             SystemsInjector.RegisterLateSystem(_executionindex, this);
         }
 
-        public void OnFixedUpdate() { }
+        public void OnFixedUpdate() 
+        {
+            p_machine.F_Update();
+            c_machine.F_Update();
+        }
+        
+        public void OnUpdate() 
+        {
+            c_machine.U_Update();
+        }
+
         public void OnLateUpdate() { }
-        public void OnUpdate() { }
     }
 }

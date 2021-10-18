@@ -182,6 +182,8 @@ namespace com.cozyhome.Console
         }
         public override void Simulate(ConsoleArgs _args)
         {
+    
+
             // pass input into 
             if ((_args.InputFlags & 0x0001) == 0 && // ignore back quote string
                 _args.InputString.Length > 0)

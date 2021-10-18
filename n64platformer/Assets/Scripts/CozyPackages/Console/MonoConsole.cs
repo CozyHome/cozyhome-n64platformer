@@ -11,13 +11,13 @@ namespace com.cozyhome.Console
         [Header("Console References")]
         [SerializeField] MonoPrinter Printer;
 
-        private Dictionary<string, ConsoleHeader.Command> Commands
-            = new Dictionary<string, ConsoleHeader.Command>() { };
-
+        private Dictionary<string, ConsoleHeader.Command> Commands;
         private ConsoleHeader.OnConsoleToggled ToggleRelay;
 
         protected override void OnAwake()
         {
+            Commands = new Dictionary<string, ConsoleHeader.Command>();
+
             Printer.CacheLines();
             Printer.Write("Console initialized at frame: " + Time.frameCount);
 
@@ -35,16 +35,23 @@ namespace com.cozyhome.Console
                 if (Commands.TryGetValue(keys[0], out ConsoleHeader.Command cmd))
                 {
                     int size = wc - 1;
-                    size = Mathf.Max(size, 1);
-                    string[] modifiers = new string[size];
+                    if(size <= 0) 
+                    {
+                        // This means the user didn't input any commands... send a null ref
+                        cmd.Invoke(null, out string output);
+                        WriteToScreen(output);
+                    }
+                    else
+                    {
+                        string[] modifiers = new string[size];
 
-                    // deep copy strings bc C# forces me to
-                    for (int i = 0; i < size; i++)
-                        modifiers[i] = keys[i + 1];
+                        // deep copy strings bc C# forces me to
+                        for (int i = 0; i < size; i++)
+                            modifiers[i] = keys[i + 1];
 
-                    cmd.Invoke(modifiers, out string output);
-
-                    WriteToScreen(output);
+                        cmd.Invoke(modifiers, out string output);
+                        WriteToScreen(output);
+                    }
                 }
                 else
                     WriteToScreen("Error: '" + keys[0] + "' is not a recognized command.");
@@ -54,12 +61,7 @@ namespace com.cozyhome.Console
         }
 
         private void InsertCMD(string key, ConsoleHeader.Command command)
-        {
-            if (Commands.ContainsKey(key))
-                return;
-            else
-                Commands.Add(key.ToLower(), command);
-        }
+            => Commands?.Add(key.ToLower(), command);
 
         private void RemoveCMD(string key)
             => Commands?.Remove(key.ToLower());
@@ -87,6 +89,10 @@ namespace com.cozyhome.Console
             ToggleRelay?.Invoke(B);
             return;
         }
+
+        public static void AttemptExecution(string rawinput) => _instance?.AttemptInvokation(rawinput);
+
+        public static void PrintToScreen(string output) => _instance?.WriteToScreen(output);
 
         public static void InsertCommand(string key, ConsoleHeader.Command command)
             => _instance?.InsertCMD(key, command);

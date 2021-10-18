@@ -1,9 +1,12 @@
 using com.cozyhome.Actors;
 using com.cozyhome.Timers;
 using com.cozyhome.Vectors;
+
+using com.cozyhome.ChainedExecutions;
+
 using UnityEngine;
 
-public static class ExecutionHeader
+public partial class ExecutionHeader
 {
     public static class Camera
     {
@@ -15,21 +18,21 @@ public static class ExecutionHeader
             [SerializeField] private TimerHeader.DeltaTimer JumpTimer;
             [SerializeField] private float BounceHeight = 2F;
 
-            public override void Enter(CameraMiddleman Middleman) { JumpTimer.Reset(); }
+            public override void Enter(CameraMiddleman Middleman) { }
 
-            public override void Exit(CameraMiddleman Middleman) { }
+            public override void Exit(CameraMiddleman Middleman) { JumpTimer.Reset(); }
 
-            public override bool Execute(CameraMiddleman Middleman)
+            public override ExecutionState Execute(CameraMiddleman Middleman)
             {
                 if (JumpTimer.Check())
-                    return false;
+                    return ExecutionState.FINISHED;
                 else
                 {
                     float value = EaseCurve.Evaluate(JumpTimer.NormalizedElapsed) * BounceHeight;
-                    Middleman.GetMachine.ApplyOffset(Vector3.up * value);
 
+                    Middleman.GetMachine.ApplyOffset(Vector3.up * value);
                     JumpTimer.Accumulate(Middleman.FDT);
-                    return true;
+                    return ExecutionState.ACTIVE;
                 }
             }
         }
@@ -48,10 +51,10 @@ public static class ExecutionHeader
             }
             public override void Exit(CameraMiddleman Middleman) { }
 
-            public override bool Execute(CameraMiddleman Middleman)
+            public override ExecutionState Execute(CameraMiddleman Middleman)
             {
                 if (HangTimer.Check())
-                    return false;
+                    return ExecutionState.FINISHED;
                 else
                 {
                     float Amount = EaseCurve.Evaluate(HangTimer.NormalizedElapsed);
@@ -64,7 +67,7 @@ public static class ExecutionHeader
                     Middleman.GetMachine.SetViewPosition(InitialPosition);
 
                     HangTimer.Accumulate(Middleman.FDT);
-                    return true;
+                    return ExecutionState.ACTIVE;
                 }
             }
         }
@@ -93,7 +96,7 @@ public static class ExecutionHeader
             }
             public override void Exit(ActorMiddleman Middleman) { }
 
-            public override bool Execute(ActorMiddleman Middleman)
+            public override ExecutionState Execute(ActorMiddleman Middleman)
             {
                 /* when we are run after Move(), assign our actor position to the required position, and rotation */
                 /* if anything, since we have an update loop to work with, we could potentially add easing to this */
@@ -101,7 +104,7 @@ public static class ExecutionHeader
                 Transform ModelView = Middleman.Machine.GetModelView;
 
                 if (LedgeTimer.Check())
-                    return false;
+                    return ExecutionState.FINISHED;
                 else
                 {
                     float percent = LedgeCurve.Evaluate(LedgeTimer.NormalizedElapsed);
@@ -122,7 +125,7 @@ public static class ExecutionHeader
                     Middleman.Machine.GetActor.SetVelocity(Vector3.zero);
 
                     LedgeTimer.Accumulate(Middleman.FDT);
-                    return true;
+                    return ExecutionState.ACTIVE;
                 }
             }
 

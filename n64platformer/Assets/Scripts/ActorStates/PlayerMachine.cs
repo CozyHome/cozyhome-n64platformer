@@ -1,19 +1,23 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+
 using UnityEngine;
+
+using com.cozyhome.ChainedExecutions;
 using com.cozyhome.Singleton;
 using com.cozyhome.Systems;
 using com.cozyhome.Console;
 using com.cozyhome.Actors;
 
+[DefaultExecutionOrder(100)]
 public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
 {
     [Header("General References")]
-    [SerializeField] private Transform ModelView;
-    [SerializeField] private Transform CameraView;
-    [SerializeField] private PlayerInput PlayerInput;
-    [SerializeField] private LedgeRegistry LedgeRegistry;
+    [SerializeField] private Transform      ModelView;
+    [SerializeField] private Transform      CameraView;
+    [SerializeField] private PlayerInput    PlayerInput;
+    [SerializeField] private LedgeRegistry  LedgeRegistry;
 
     private Vector3 spawnposition;
     private ActorHeader.Actor PlayerActor;
@@ -25,6 +29,7 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
     private AnimatorEventRegistry AnimatorEventRegistry;
     [SerializeField] private ActorMiddleman MainMiddleman;
     private ExecutionChain<ExecutionHeader.Actor.ExecutionIndex, ActorMiddleman> MainChain;
+
     void Start()
     {
         spawnposition = transform.position;
@@ -49,17 +54,16 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
             tmpbuffer[i].Initialize(this);
     }
 
-    void FixedUpdate()
+    public void F_Update()
     {
         PlayerActor.SetPosition(transform.position);
         PlayerActor.SetOrientation(transform.rotation);
         FSM.Current.Tick(Time.fixedDeltaTime);
-
         ActorHeader.Move(this, PlayerActor, Time.fixedDeltaTime);
 
         MainMiddleman.SetMachine(this);
         MainMiddleman.SetFixedDeltaTime(Time.fixedDeltaTime);
-        MainChain.FixedTick();
+        MainChain.Tick();
 
         transform.SetPositionAndRotation(PlayerActor.position, PlayerActor.orientation);
         Animator.Update(Time.fixedDeltaTime);

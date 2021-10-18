@@ -731,6 +731,7 @@ GameObject:
   - component: {fileID: 602864550}
   - component: {fileID: 602864551}
   - component: {fileID: 602864552}
+  - component: {fileID: 602864553}
   m_Layer: 0
   m_Name: SystemsInjector
   m_TagString: Untagged
@@ -792,6 +793,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _executionindex: 1
+--- !u!114 &602864553
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 602864548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b0223bef6036e44d9ae9702a2efc657, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  p_machine: {fileID: 864958336}
+  c_machine: {fileID: 963194229}
+  _executionindex: 100
 --- !u!1 &685374732
 GameObject:
   m_ObjectHideFlags: 0
@@ -1075,7 +1091,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 864958330}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 13f2c60eb4a4cd248a2be897fa65cc27, type: 3}
+  m_Script: {fileID: 11500000, guid: 1a5d3f0cb65c4fc4887c2651162a409c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   MoveType: 2
@@ -1088,8 +1104,8 @@ MonoBehaviour:
   _filter:
     serializedVersion: 2
     m_Bits: 1
---- !u!136 &864958333
-CapsuleCollider:
+--- !u!65 &864958333
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1098,9 +1114,8 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.75
-  m_Height: 4
-  m_Direction: 1
+  serializedVersion: 2
+  m_Size: {x: 1.5, y: 4, z: 1.5}
   m_Center: {x: 0, y: 2, z: 0}
 --- !u!114 &864958334
 MonoBehaviour:
@@ -1339,8 +1354,8 @@ MonoBehaviour:
   TiltSpeedInfluence: 0.125
   TiltSpeedVelocity: 4
   MaxRotateSpeed: 840
-  MaxMoveSpeed: 20
-  MoveAcceleration: 25
+  MaxMoveSpeed: 24
+  MoveAcceleration: 24
   WalkAcceleration: 16
   LastLandingTimer:
     TotalDeltaDifference: 0.01
@@ -2119,8 +2134,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  DolleyDistance: 16
   MaxVerticalAngle: 150
+  DolleyDistance: 16
   JumpExecution:
     key: 1
     EaseCurve:
@@ -2138,12 +2153,12 @@ MonoBehaviour:
       - serializedVersion: 3
         time: 0.4987654
         value: 1
-        inSlope: -0.01189073
-        outSlope: -0.01189073
+        inSlope: -0.0026267974
+        outSlope: -0.0026267974
         tangentMode: 0
         weightedMode: 3
-        inWeight: 0.7966201
-        outWeight: 0.79942566
+        inWeight: 0.70086026
+        outWeight: 0.7015977
       - serializedVersion: 3
         time: 1
         value: 0

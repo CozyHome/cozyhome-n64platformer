@@ -1,3 +1,4 @@
 Base path: 'C:/Users/dancu/Desktop/Gamedev/2020.3.17f1/Editor/Data', plugins path 'C:/Users/dancu/Desktop/Gamedev/2020.3.17f1/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
 
+Cmd: shutdown

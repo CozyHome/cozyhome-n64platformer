@@ -40,17 +40,17 @@ public class GroundState : ActorState
         {
             LastLandingTimer.Stamp(Time.time);
         };
-
     }
 
     public override void Enter(ActorState prev)
     {
         ActorEventRegistry EventRegistry = Machine.GetActorEventRegistry;
+        ActorHeader.Actor Actor = Machine.GetActor;
         Transform ModelView = Machine.GetModelView;
         Animator Animator = Machine.GetAnimator;
 
         EventRegistry.Event_ActorLanded?.Invoke();
-        EventRegistry.Event_ActorTurn?.Invoke( ModelView.rotation );
+        EventRegistry.Event_ActorTurn?.Invoke(ModelView.rotation);
 
         Animator.SetTrigger("Land");
         Animator.ResetTrigger("Fall");
@@ -88,7 +88,7 @@ public class GroundState : ActorState
         float Speed = Velocity.magnitude;
         float Ratio = Speed / MaxMoveSpeed;
         float NewTilt = 0F;
-
+        
         if (DetermineTransitions(XButton, SquareTrigger, Actor))
             return;
         else

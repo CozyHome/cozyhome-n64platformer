@@ -1,6 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+
+using com.cozyhome.ChainedExecutions;
+
 using UnityEngine;
 
 public class CameraMachine : MonoBehaviour
@@ -8,19 +11,19 @@ public class CameraMachine : MonoBehaviour
     private MonoFSM<string, CameraState> FSM;
 
     [Header("Target References")]
-    [SerializeField] private Transform ViewTransform;
-    [SerializeField] private Transform OrbitTransform;
+    [SerializeField] private Transform          ViewTransform;
+    [SerializeField] private Transform          OrbitTransform;
     [SerializeField] private ActorEventRegistry ActorEventRegistry;
-    [SerializeField] private OccludeRegistry OccludeRegistry;
+    [SerializeField] private OccludeRegistry    OccludeRegistry;
 
     [Header("Target Values")]
     [SerializeField] private AnimationCurve DistanceCurve;
-    [SerializeField] private float DolleyDistance;
-    [SerializeField] private float MaxVerticalAngle = 150F;
+    [SerializeField] private float          MaxVerticalAngle = 150F;
+    [SerializeField] private float          DolleyDistance;
 
     /* Events */
     [Header("Event Subsystem References")]
-    [SerializeField] private CameraMiddleman Middleman;
+    [SerializeField] private CameraMiddleman     Middleman;
     private ExecutionChain<int, CameraMiddleman> MainChain;
 
     [SerializeField] private ExecutionHeader.Camera.OnJumpExecution JumpExecution;
@@ -40,18 +43,18 @@ public class CameraMachine : MonoBehaviour
             tmpbuffer[i].Initialize(this);
     }
 
-    void FixedUpdate()
+    public void F_Update()
     {
         float fdt = Time.fixedDeltaTime;
 
         FSM.Current.FixedTick(fdt);
         Middleman.SetFixedDeltaTime(fdt);
-        MainChain.FixedTick();
+        MainChain.Tick();
 
         SolveOcclusion();
     }
 
-    void Update()
+    public void U_Update()
     {
         FSM.Current.Tick(Time.deltaTime);
     }

@@ -15,7 +15,7 @@ namespace com.cozyhome.Console
         public static string[] Parse(string rawinput, out int wc)
         {
             // find action and subsequent modifiers
-            const int MAXKEYS = 10;
+            const int MAXKEYS = 12;
             // I hate this but a potential fix is to 
             // regularly call GC.Collect() during our update timeline
             // to prevent spikes...
@@ -24,6 +24,8 @@ namespace com.cozyhome.Console
             // if it hasn't been manullay been ran for some time ? 
 
             // stack of quote identifiers to know if to ignore splitting
+            
+            // DISGUSTING. WRAP THIS IN A OBJECT THAT IS PASSED INTO THE FUNCTION YOUY FUCK -DC 8/29/2021
             Queue<int> quotequeue = new Queue<int>(); // quote stack
             Queue<int> charqueue = new Queue<int>();
             char[] txt = rawinput.ToCharArray();
@@ -68,9 +70,23 @@ namespace com.cozyhome.Console
                             if (i == 0 || // if is beginning OR
                                txt[i - 1] == ' ' || // prev is whitespace OR
                                txt[i - 1] == '"') // prev is quote
-                                charqueue.Enqueue(i);
+                                {
+                                    charqueue.Enqueue(i);
+                                    
+                                    // alright, so we need to handle the case
+                                    // where a token is one character long. This will
+                                    // be how we do it:
+                                    // DC 9/06/2021 @ 12:13 AM
+                                    if(i + 1 >= txt.Length - 1 ||
+                                        txt[i + 1] == ' ' ||
+                                        txt[i + 1] == '"')
+                                    {
+                                        charqueue.Enqueue(i + 1);   
+                                    }
+                                }
+
                         }
-                        else // if not starting index, theen we must be an ending index 
+                        else // if not starting index, then we must be an ending index 
                         {
                             if (i + 1 >= txt.Length - 1 ||
                                 txt[i + 1] == ' ' ||
@@ -142,7 +158,8 @@ namespace com.cozyhome.Console
         {
             output = "";
             for (int i = 0; i < parameters.Length; i++)
-                output += (" " + parameters[i]);
+                output += (parameters[i]) + " ";
+       
         }
     }
 }
