@@ -1,19 +1,21 @@
 using com.cozyhome.Actors;
+using com.cozyhome.Console;
 using com.cozyhome.Timers;
 using com.cozyhome.Vectors;
 using UnityEngine;
 
 enum WalkType
 {
-    Idle = 0,
-    Walk = 1,
-    Run = 2
+    Idle     = 0,
+    Walk     = 1,
+    Run      = 2
 }
 
 public class GroundState : ActorState
 {
     // values
     [Header("Animation Curves")]
+    [SerializeField] private AnimationCurve MomentumCurve;      // how will our velocity change as we continue moving forwards?
     [SerializeField] private AnimationCurve RunRotationalCurve;
     [SerializeField] private AnimationCurve AnimatorSpeedCurve;
     [SerializeField] private AnimationCurve AccelerationCurve; // how fast we accelerate based on speed
@@ -32,6 +34,10 @@ public class GroundState : ActorState
     [SerializeField] private TimerHeader.SnapshotTimer LastLandingTimer;
     private float TiltLerp = 0F;
 
+    // ugly code but fuck it:
+    private float _momentum, _init_momentum;
+
+
     protected override void OnStateInitialize()
     {
         Machine.GetFSM.SetState(this.Key);
@@ -39,6 +45,17 @@ public class GroundState : ActorState
         Machine.GetActorEventRegistry.Event_ActorLanded += () =>
         {
             LastLandingTimer.Stamp(Time.time);
+
+            // use some form of momentum mechanic
+            float XZSpeed = Vector3.Magnitude(Vector3.Scale(Machine.GetActor.velocity, new Vector3(1F, 0F, 1F)));
+            
+            // use delta for momentum
+            if(XZSpeed > MaxMoveSpeed)
+            {
+                // get delta and lerp it to zero over time
+                _init_momentum = XZSpeed - MaxMoveSpeed;
+                _momentum      = _init_momentum;
+            }
         };
     }
 
@@ -85,9 +102,9 @@ public class GroundState : ActorState
         Vector3 Velocity = Actor.velocity;
 
         float JoystickAmount = Local.magnitude;
-        float Speed = Velocity.magnitude;
-        float Ratio = Speed / MaxMoveSpeed;
-        float NewTilt = 0F;
+        float Speed          = Velocity.magnitude;
+        float AnimRatio      = Speed / MaxMoveSpeed;
+        float NewTilt        = 0F;
         
         if (DetermineTransitions(XButton, SquareTrigger, Actor))
             return;
@@ -100,9 +117,20 @@ public class GroundState : ActorState
                     if (JoystickAmount > 0.125F)
                         ModelView.rotation = Quaternion.LookRotation(Move, Vector3.up);
 
-                    Speed -= DeaccelerationCurve.Evaluate(Ratio) * fdt * MoveAcceleration;
+                    Speed -= DeaccelerationCurve.Evaluate(AnimRatio) * fdt * MoveAcceleration;
                     Speed = Mathf.Max(Speed, 0F);
                     NewTilt = 0F;
+
+                    
+                    // idea: store momentum in a variable, but delta it based on what it currently is
+                    if(_init_momentum > 0.05F) 
+                    {
+                        // have momentum preserve more in the direction you've landed
+                        _momentum -= (4F * MoveAcceleration) * MomentumCurve.Evaluate(_momentum / _init_momentum) * fdt;
+                        _momentum = _momentum > 0 ? _momentum : 0F;
+
+                        AnimRatio += _momentum / _init_momentum;
+                    }
 
                     Animator.speed = 1F;
                     break;
@@ -111,17 +139,41 @@ public class GroundState : ActorState
                     NewTilt = MoveRotate(Move, MaxRotateSpeed * fdt);
                     Speed = Mathf.Lerp(Speed, JoystickAmount * MaxMoveSpeed, WalkAcceleration * JoystickAmount * fdt);
 
+                    // idea: store momentum in a variable, but delta it based on what it currently is
+                    if(_init_momentum > 0.05F) 
+                    {
+                        // have momentum preserve more in the direction you've landed
+                        _momentum -= (2F * MoveAcceleration) * MomentumCurve.Evaluate(_momentum / _init_momentum) * fdt;
+                        _momentum = _momentum > 0 ? _momentum : 0F;
+
+                        AnimRatio += _momentum / _init_momentum;
+                    }
+
                     Animator.speed = 1F;
                     break;
                 case WalkType.Run:
 
-                    NewTilt = MoveRotate(Move, RunRotationalCurve.Evaluate(Ratio) * MaxRotateSpeed * fdt);
+                    NewTilt = MoveRotate(Move, RunRotationalCurve.Evaluate(AnimRatio) * MaxRotateSpeed * fdt);
                     TiltLerp = Mathf.Lerp(TiltLerp, NewTilt, TiltSpeedVelocity * fdt);
 
-                    Speed += AccelerationCurve.Evaluate(Ratio) * fdt * MoveAcceleration;
+                    Speed += AccelerationCurve.Evaluate(AnimRatio) * fdt * MoveAcceleration;
                     Speed = Mathf.Min(Speed, MaxMoveSpeed);
+                    
+                    // idea: store momentum in a variable, but delta it based on what it currently is
+                    if(_init_momentum > 0.05F) 
+                    {
+                        // have momentum preserve more in the direction you've landed
+                        _momentum -= MoveAcceleration * MomentumCurve.Evaluate(_momentum / _init_momentum) * fdt;
+                        _momentum = _momentum > 0 ? _momentum : 0F;
 
-                    Animator.speed = AnimatorSpeedCurve.Evaluate(Ratio) + (Mathf.Abs(TiltLerp) * TiltSpeedInfluence);
+                        AnimRatio += _momentum / _init_momentum;
+                    }
+                    
+                    Speed += _momentum;
+
+                    Animator.speed = AnimatorSpeedCurve.Evaluate(AnimRatio + (Mathf.Abs(TiltLerp) * TiltSpeedInfluence));
+                    
+                    Debug.Log("Animator Playback Rate: " + Animator.speed + " Momentum left: " + _momentum);
                     break;
             }
 

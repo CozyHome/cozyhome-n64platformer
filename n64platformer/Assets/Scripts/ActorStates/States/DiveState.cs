@@ -8,11 +8,11 @@ public class DiveState : ActorState
     [SerializeField] private AnimationCurve DiveDeaccelerationCurve;
     [SerializeField] private int DivesPerAerialState = 1;
     [SerializeField] private float DiveHeight = 1.5F;
-    [SerializeField] private float DiveSpeed = 26F;
     [SerializeField] private float DiveTurnSpeed = 180F;
 
     private float InitialSpeed = 0F;
     private int DiveCount = 0;
+    private float DiveSpeed = 30F;
 
     public bool CheckDiveEligiblity() => DiveCount > 0;
 
@@ -29,6 +29,17 @@ public class DiveState : ActorState
         Animator.SetTrigger("Dive"); // goto dive
         Animator.SetInteger("Step", 0); // set step to zero
         Animator.SetFloat("Time", 0); // set time to zero
+
+        DiveSpeed = Vector3.Scale(Actor.velocity, new Vector3(1F, 0F, 1F)).magnitude;
+        
+        if(DiveSpeed < 20F)
+            DiveSpeed = 20F;
+        else if(DiveSpeed < 30F)
+            DiveSpeed += 5F;
+        else
+            DiveSpeed = 30F;
+
+        // Debug.Log(DiveSpeed);
 
         /* clear velocity */
         for (int i = 0; i < 3; i++)
@@ -82,15 +93,11 @@ public class DiveState : ActorState
         {
             Vector3 HorizontalVelocity = Vector3.Scale(Velocity, new Vector3(1F, 0F, 1F));
             Vector3 VerticalVelocity = Velocity - HorizontalVelocity;
-            float len = HorizontalVelocity.magnitude;
-
-            len -= DiveDeaccelerationCurve.Evaluate(len / DiveSpeed);
-
-            HorizontalVelocity = ModelView.forward * len;
 
             ActorStateHeader.AccumulateConstantGravity(ref VerticalVelocity, fdt, PlayerVars.GRAVITY);
 
-            ActorStateHeader.RepairTime(fdt,
+            ActorStateHeader.RepairTime(
+                fdt,
                 DiveTurnCurve.Evaluate(percent),
                 DiveTurnSpeed,
                 DiveSpeed,
@@ -98,6 +105,11 @@ public class DiveState : ActorState
                 Move,
                 ModelView,
                 ref Velocity);
+
+            float len = HorizontalVelocity.magnitude;
+
+            // len -= DiveDeaccelerationCurve.Evaluate(len / 30F);
+            HorizontalVelocity = ModelView.forward * len;
 
             Animator.SetFloat("Speed", 1F - percent);
             Actor.SetVelocity(VerticalVelocity + HorizontalVelocity);

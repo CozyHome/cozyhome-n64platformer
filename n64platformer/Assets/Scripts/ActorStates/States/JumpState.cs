@@ -22,10 +22,11 @@ public class JumpState : ActorState
     [SerializeField] private AnimationCurve TurnTimeCurve;
     [SerializeField] private float MaxRotationSpeed = 360F;
     [SerializeField] private float MaxMoveInfluence = 10F;
-    [SerializeField] private float MaxHorizontalSpeed = 28F;
+    
 
     [SerializeField] private TimerHeader.SnapshotTimer LastLandingTimer;
     private float LastJumpTilt = 0F;
+    private float MaxHorizontalSpeed = 28F;
 
     protected override void OnStateInitialize()
     {
@@ -63,6 +64,8 @@ public class JumpState : ActorState
 
         /* notify our callback system */
         Machine.GetActorEventRegistry.Event_ActorJumped?.Invoke();
+    
+        MaxHorizontalSpeed = Vector3.Scale(Velocity, new Vector3(1F, 0F, 1F)).magnitude;
     }
 
     public override void Tick(float fdt)
