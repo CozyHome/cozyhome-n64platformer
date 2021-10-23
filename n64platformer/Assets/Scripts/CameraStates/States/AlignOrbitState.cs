@@ -26,6 +26,7 @@ public class AlignOrbitState : CameraState
 
     public override void FixedTick(float fdt)
     {
+
         if(TurnTime >= MaxTurnTime)
         {
             Machine.GetFSM.SwitchState("Automatic");

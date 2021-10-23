@@ -260,12 +260,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Listen: 1
-  JoystickX: Horizontal
-  JoystickY: Vertical
-  MouseX: Mouse X
-  MouseY: Mouse Y
-  XButton: Fire1
-  SquareButton: Fire2
+  JoystickX: LJoystickX
+  JoystickY: LJoystickY
+  MouseX: RJoystickX
+  MouseY: RJoystickY
+  XButton: Fire2
+  SquareButton: Fire1
   LeftTrigger: Fire3
   RawMove: {x: 0, y: 0}
   RawMouse: {x: 0, y: 0}

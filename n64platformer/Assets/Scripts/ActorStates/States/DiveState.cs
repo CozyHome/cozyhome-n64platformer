@@ -39,8 +39,6 @@ public class DiveState : ActorState
         else
             DiveSpeed = 30F;
 
-        // Debug.Log(DiveSpeed);
-
         /* clear velocity */
         for (int i = 0; i < 3; i++)
             Velocity[i] = 0F;

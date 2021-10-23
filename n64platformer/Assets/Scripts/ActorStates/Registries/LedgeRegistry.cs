@@ -8,7 +8,7 @@ using UnityEngine;
 public class LedgeRegistry : MonoBehaviour
 {
     public const float REGULAR_DISTANCE = 0.5F; 
-    public const float DIVE_DISTANCE = 2.5F; 
+    public const float DIVE_DISTANCE = 3.5F; 
 
     private const int HIT_PRIMIVITE_LEDGETRACE = 0x0001;
     private const int BLOCKING_PRIMITIVE_LEDGETRACE = 0x0002;
@@ -193,11 +193,11 @@ public class LedgeRegistry : MonoBehaviour
 
                 /* determining if our floor hit is tall enough to constitute a ledge. */
                 /* determining if our floor hit is actually stable/perpendicular to us. */
+
                 if (height >= MinLedgeHeight &&
                     VectorHeader.Dot(ledgehit.LedgeUpwardNormal, up) >= (1 - min_correlation))
                 {
                     /* overlap safety check */
-                    
                     /* inflate */
 
                     Archetype.Overlap(

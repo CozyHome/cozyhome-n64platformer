@@ -52,7 +52,7 @@ public class AutomaticOrbitState : CameraState
         }
 
         Vector2 Mouse = PlayerInput.GetRawMouse;
-        if (Mouse.sqrMagnitude > 0F)
+        if (Mouse.sqrMagnitude > 0.1F)
         {
             Machine.GetFSM.SwitchState("Manual");
             return;
@@ -69,18 +69,19 @@ public class AutomaticOrbitState : CameraState
             Vector3 v2 = CameraRotation * Vector3.right;
             
             // Get the larger sign..?
-            /*
-             * 
-            float angle = Vector3.SignedAngle(v2,v1, Vector3.up);
-            if (Mathf.Abs(angle) >= 90F &&
-                Mathf.Sign(angle) != Mathf.Sign(LastRotate))
-                Rotate[0] = 0F;
-            else
-                Rotate[0] = angle;
             
-            LastRotate = angle;
-            */
+            
+            float angle = Vector3.SignedAngle(v2,v1, Vector3.up);
+            // if (Mathf.Abs(angle) >= 90F && Mathf.Sign(angle) != Mathf.Sign(LastRotate))
+            //     Rotate[0] = 0F;
+            // else
+            //     Rotate[0] = angle;
+            if(Mathf.Abs(angle) >= 160F)
+                angle = 0F;
 
+            Rotate[0] = angle;
+            LastRotate = angle;
+            
             // if angle >= 175F, maybe make a new temporary state that does the following:
             // reconstruct our look rotation based on our displacement..?
             // instead have our look rotation constantly pointing toward the player..?
@@ -92,9 +93,7 @@ public class AutomaticOrbitState : CameraState
             // solution
         }
 
-       // if (absAngle >= 175F)
-       //     Rotate[0] = 0F;
-        if (Mathf.Abs(Rotate[0]) > 15F)
+        if (Mathf.Abs(Rotate[0]) > 10F)
         {
             TurnTime += fdt;
             TurnTime = Mathf.Min(TurnTime, MaxTurnTime);
@@ -107,6 +106,8 @@ public class AutomaticOrbitState : CameraState
 
         float rate = EasingCurve.Evaluate(TurnTime / MaxTurnTime);
         rate *= (fdt); // remvoe fdt since rotate quaternion is already using fdt
+
+        Debug.Log(Rotate);
 
         Machine.OrbitAroundTarget(Rotate * rate); /* Redo this */
         Machine.ApplyOrbitPosition();

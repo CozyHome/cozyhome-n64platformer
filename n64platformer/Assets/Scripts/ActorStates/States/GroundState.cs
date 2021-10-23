@@ -37,7 +37,6 @@ public class GroundState : ActorState
     // ugly code but fuck it:
     private float _momentum, _init_momentum;
 
-
     protected override void OnStateInitialize()
     {
         Machine.GetFSM.SetState(this.Key);
@@ -170,10 +169,9 @@ public class GroundState : ActorState
                     }
                     
                     Speed += _momentum;
-
                     Animator.speed = AnimatorSpeedCurve.Evaluate(AnimRatio + (Mathf.Abs(TiltLerp) * TiltSpeedInfluence));
                     
-                    Debug.Log("Animator Playback Rate: " + Animator.speed + " Momentum left: " + _momentum);
+                    // Debug.Log("Animator Playback Rate: " + Animator.speed + " Momentum left: " + _momentum);
                     break;
             }
 
