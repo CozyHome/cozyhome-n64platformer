@@ -107,8 +107,6 @@ public class AutomaticOrbitState : CameraState
         float rate = EasingCurve.Evaluate(TurnTime / MaxTurnTime);
         rate *= (fdt); // remvoe fdt since rotate quaternion is already using fdt
 
-        Debug.Log(Rotate);
-
         Machine.OrbitAroundTarget(Rotate * rate); /* Redo this */
         Machine.ApplyOrbitPosition();
     }

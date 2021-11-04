@@ -66,6 +66,7 @@ public class JumpState : ActorState
         Machine.GetActorEventRegistry.Event_ActorJumped?.Invoke();
     
         MaxHorizontalSpeed = Vector3.Scale(Velocity, new Vector3(1F, 0F, 1F)).magnitude;
+        MaxHorizontalSpeed = MaxHorizontalSpeed < 1F ? 15F : MaxHorizontalSpeed;
     }
 
     public override void Tick(float fdt)
