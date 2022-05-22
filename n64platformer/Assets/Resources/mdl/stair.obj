@@ -1,0 +1,154 @@
+mtllib stair.mtl
+# vertices
+v 0 0 -0
+v 0 0 224
+v 0 16 224
+v 0 16 -0
+v 256 16 224
+v 256 0 224
+v 256 0 -0
+v 256 16 -0
+v 32 16 -0
+v 32 16 224
+v 32 32 224
+v 32 32 -0
+v 256 32 224
+v 256 16 224
+v 256 16 -0
+v 256 32 -0
+v 64 32 -0
+v 64 32 224
+v 64 48 224
+v 64 48 -0
+v 256 48 224
+v 256 32 224
+v 256 32 -0
+v 256 48 -0
+v 96 48 -0
+v 96 48 224
+v 96 64 224
+v 96 64 -0
+v 256 64 224
+v 256 48 224
+v 256 48 -0
+v 256 64 -0
+
+# texture coordinates
+vt 0 -0
+vt 224 -0
+vt 224 16
+vt 0 16
+vt 256 16
+vt 256 -0
+vt -256 -224
+vt 0 -224
+vt -256 -0
+vt 256 -224
+vt -256 16
+vt -224 16
+vt -224 -0
+vt 224 32
+vt 0 32
+vt 256 32
+vt 32 32
+vt 32 16
+vt -32 -224
+vt -32 -0
+vt 32 -0
+vt 32 -224
+vt -32 16
+vt -32 32
+vt -256 32
+vt -224 32
+vt 224 48
+vt 0 48
+vt 256 48
+vt 64 48
+vt 64 32
+vt -64 -224
+vt -64 -0
+vt 64 -0
+vt 64 -224
+vt -64 32
+vt -64 48
+vt -256 48
+vt -224 48
+vt 224 64
+vt 0 64
+vt 256 64
+vt 96 64
+vt 96 48
+vt -96 -224
+vt -96 -0
+vt 96 -0
+vt 96 -224
+vt -96 48
+vt -96 64
+vt -256 64
+vt -224 64
+
+# face normals
+vn -1 0 -0
+vn 0 0 1
+vn 0 -1 -0
+vn 0 1 -0
+vn 0 0 -1
+vn 1 0 -0
+
+# objects
+o entity0_brush0
+usemtl __TB_empty
+f 1/1/1 2/2/1 3/3/1 4/4/1
+usemtl __TB_empty
+f 5/5/2 3/4/2 2/1/2 6/6/2
+usemtl __TB_empty
+f 6/7/3 2/8/3 1/1/3 7/9/3
+usemtl __TB_empty
+f 8/6/4 4/1/4 3/8/4 5/10/4
+usemtl __TB_empty
+f 7/9/5 1/1/5 4/4/5 8/11/5
+usemtl __TB_empty
+f 8/4/6 5/12/6 6/13/6 7/1/6
+
+o entity0_brush1
+usemtl __TB_empty
+f 9/4/1 10/3/1 11/14/1 12/15/1
+usemtl __TB_empty
+f 13/16/2 11/17/2 10/18/2 14/5/2
+usemtl __TB_empty
+f 14/7/3 10/19/3 9/20/3 15/9/3
+usemtl __TB_empty
+f 16/6/4 12/21/4 11/22/4 13/10/4
+usemtl __TB_empty
+f 15/11/5 9/23/5 12/24/5 16/25/5
+usemtl __TB_empty
+f 16/15/6 13/26/6 14/12/6 15/4/6
+
+o entity0_brush2
+usemtl __TB_empty
+f 17/15/1 18/14/1 19/27/1 20/28/1
+usemtl __TB_empty
+f 21/29/2 19/30/2 18/31/2 22/16/2
+usemtl __TB_empty
+f 22/7/3 18/32/3 17/33/3 23/9/3
+usemtl __TB_empty
+f 24/6/4 20/34/4 19/35/4 21/10/4
+usemtl __TB_empty
+f 23/25/5 17/36/5 20/37/5 24/38/5
+usemtl __TB_empty
+f 24/28/6 21/39/6 22/26/6 23/15/6
+
+o entity0_brush3
+usemtl __TB_empty
+f 25/28/1 26/27/1 27/40/1 28/41/1
+usemtl __TB_empty
+f 29/42/2 27/43/2 26/44/2 30/29/2
+usemtl __TB_empty
+f 30/7/3 26/45/3 25/46/3 31/9/3
+usemtl __TB_empty
+f 32/6/4 28/47/4 27/48/4 29/10/4
+usemtl __TB_empty
+f 31/38/5 25/49/5 28/50/5 32/51/5
+usemtl __TB_empty
+f 32/41/6 29/52/6 30/39/6 31/28/6
+

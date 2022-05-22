@@ -12,7 +12,9 @@ public class WallSlideState : ActorState
 
     protected override void OnStateInitialize() { }
 
-    public override void Enter(ActorState prev) { }
+    public override void Enter(ActorState prev) {
+        Debug.Log(prev.GetKey);
+    }
 
     public override void Exit(ActorState next)
     {
@@ -43,7 +45,7 @@ public class WallSlideState : ActorState
 
         bool XTrigger = Machine.GetPlayerInput.GetXTrigger;
 
-        /* Continual Ledge Detection  */
+        /* Continual Ledge Detection */
         if (ActorStateHeader.Transitions.CheckSlideTransitions(
             Actor.position,
             -Machine.GetModelView.forward,
@@ -70,7 +72,7 @@ public class WallSlideState : ActorState
             Vector3 HorizontalV = Vector3.Scale(Velocity, new Vector3(1F, 0F, 1F));
             Vector3 VerticalV = Velocity - HorizontalV;
 
-            HorizontalV *= (1F - (HorizontalLossPerSecond * fdt));
+            // HorizontalV *= (1F - (HorizontalLossPerSecond * fdt));
             VerticalV -= Vector3.up * PlayerVars.GRAVITY * GravitationalCurve.Evaluate(VerticalV[1] / InitialVelocity[1]) * fdt;
 
             if (VerticalV[1] <= -MaxVerticalFallingSpeed)

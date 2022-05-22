@@ -10,6 +10,8 @@ public class AlignOrbitState : CameraState
     [SerializeField] private float MaxTurnTime = 0.5F;
     private Quaternion Initial, Final;
 
+    [SerializeField] private PlayerInput PlayerInput;
+
     private float TurnTime;
     
     protected override void OnStateInitialize() { }
@@ -26,8 +28,10 @@ public class AlignOrbitState : CameraState
 
     public override void FixedTick(float fdt)
     {
+    
+        Vector2 Mouse = PlayerInput.GetRawMouse;
 
-        if(TurnTime >= MaxTurnTime)
+        if(Mouse.sqrMagnitude > 0.001F || TurnTime >= MaxTurnTime)
         {
             Machine.GetFSM.SwitchState("Automatic");
             return;

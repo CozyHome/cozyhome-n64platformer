@@ -100,9 +100,8 @@ public static class ActorStateHeader
 
         private static bool CheckSwitchToSlide(Vector3 Position, PlayerMachine Machine, LedgeRegistry.LedgeHit ledgehit)
         {
-            bool IsBlockingWall = ledgehit.AuxillaryDelta[0] >= -0.125F && (ledgehit.IsBlocking) && !(ledgehit.IsLedge);
-
-            if (IsBlockingWall && (ledgehit.LedgeDelta[1] == 0F || ledgehit.LedgeDelta[1] >= 4F))
+            bool IsBlockingWall = ledgehit.AuxillaryDelta[0] >= -0.125F && (ledgehit.IsBlocking);
+            if (Machine.GetActor.velocity[1] <= 2F && IsBlockingWall/* && (ledgehit.LedgeDelta[1] == 0F || ledgehit.LedgeDelta[1] >= 4F)*/)
             {
                 Machine.GetFSM.SwitchState(
                     (ActorState next) =>

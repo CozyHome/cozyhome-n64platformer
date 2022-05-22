@@ -52,7 +52,7 @@ public class AutomaticOrbitState : CameraState
         }
 
         Vector2 Mouse = PlayerInput.GetRawMouse;
-        if (Mouse.sqrMagnitude > 0.1F)
+        if (Mouse.sqrMagnitude > 0.001F)
         {
             Machine.GetFSM.SwitchState("Manual");
             return;

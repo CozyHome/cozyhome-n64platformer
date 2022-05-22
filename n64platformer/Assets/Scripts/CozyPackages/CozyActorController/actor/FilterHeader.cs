@@ -56,6 +56,8 @@ namespace com.cozyhome.Actors
                     continue;
                 }
             }
+
+            _tracesfound = nb_found;
         }
 
         // Simply a copy of ArchetypeHeader.OverlapFilters.FilterSelf() with trigger checking

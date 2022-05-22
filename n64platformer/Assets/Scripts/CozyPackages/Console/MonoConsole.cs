@@ -5,9 +5,12 @@ using System;
 
 namespace com.cozyhome.Console
 {
+
     [DefaultExecutionOrder(-2000)]
     public class MonoConsole : SingletonBehaviour<MonoConsole>
     {
+        public const string sep = "================";
+        
         [Header("Console References")]
         [SerializeField] MonoPrinter Printer;
 

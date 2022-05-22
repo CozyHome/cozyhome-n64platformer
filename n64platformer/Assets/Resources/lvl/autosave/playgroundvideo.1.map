@@ -4,7 +4,7 @@
 {
 "mapversion" "220"
 "classname" "worldspawn"
-"wad" "D:/QuakeDev/wads/prototype_1_2.wad"
+"wad" "C:/Users/dancu/Desktop/Modding/wads/prototype_1_2.wad"
 // brush 0
 {
 ( 0 0 448 ) ( 0 1 448 ) ( 0 0 449 ) 64_brown_2 [ 0 -1 0 0 ] [ 0 0 -1 0 ] 0 1 1

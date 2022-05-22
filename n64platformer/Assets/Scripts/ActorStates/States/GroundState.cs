@@ -135,7 +135,7 @@ public class GroundState : ActorState
                     break;
                 case WalkType.Walk:
 
-                    NewTilt = MoveRotate(Move, MaxRotateSpeed * fdt);
+                    NewTilt = MoveRotate(Velocity, Move, MaxRotateSpeed * fdt);
                     Speed = Mathf.Lerp(Speed, JoystickAmount * MaxMoveSpeed, WalkAcceleration * JoystickAmount * fdt);
 
                     // idea: store momentum in a variable, but delta it based on what it currently is
@@ -152,7 +152,7 @@ public class GroundState : ActorState
                     break;
                 case WalkType.Run:
 
-                    NewTilt = MoveRotate(Move, RunRotationalCurve.Evaluate(AnimRatio) * MaxRotateSpeed * fdt);
+                    NewTilt = MoveRotate(Velocity, Move, RunRotationalCurve.Evaluate(AnimRatio) * MaxRotateSpeed * fdt);
                     TiltLerp = Mathf.Lerp(TiltLerp, NewTilt, TiltSpeedVelocity * fdt);
 
                     Speed += AccelerationCurve.Evaluate(AnimRatio) * fdt * MoveAcceleration;
@@ -217,14 +217,21 @@ public class GroundState : ActorState
     public override void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask) { }
     public override void OnTraceHit(ActorHeader.TraceHitType tracetype, RaycastHit trace, Vector3 position, Vector3 velocity) { }
     public override void OnTriggerHit(ActorHeader.TriggerHitType triggertype, Collider trigger) { }
-    private float MoveRotate(Vector3 move, float rate)
+    private float MoveRotate(Vector3 velocity, Vector3 move, float rate)
     {
         Quaternion Old = Machine.GetModelView.rotation;
 
-        Machine.GetModelView.rotation = Quaternion.RotateTowards(
-                Machine.GetModelView.rotation,
-                Quaternion.LookRotation(move, Vector3.up),
-                rate);
+        if(velocity.magnitude <= 0.1F && move.magnitude >= 1.0F)
+            Machine.GetModelView.rotation = Quaternion.LookRotation(move, Vector3.up);
+        else
+        {
+            Machine.GetModelView.rotation = Quaternion.RotateTowards(
+                    Machine.GetModelView.rotation,
+                    Quaternion.LookRotation(move, Vector3.up),
+                    rate);
+        }
+
+
 
         float YAngle = Vector3.SignedAngle(
             Old * Vector3.forward,

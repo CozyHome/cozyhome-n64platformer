@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using com.cozyhome.Vectors;
 using UnityEngine;
 
 namespace com.cozyhome.Archetype
@@ -134,14 +136,14 @@ namespace com.cozyhome.Archetype
         {
             0.002F, // sphere
             0.002F, // capsule
-            0.002F // box
+            0.02F // box
         };
 
         private static readonly float[] TRACEBIAS = new float[4]
         {
             0.0002F, // sphere
             0.0002F, // capsule
-            0.0002F, // box
+            0.01F, // box
             0.0F // line
         };
 
@@ -149,7 +151,7 @@ namespace com.cozyhome.Archetype
         public static float GET_TRACEBIAS(int _i0) => TRACEBIAS[_i0];
 
         [System.Serializable]
-        public abstract class Archetype : Object
+        public abstract class Archetype
         {
             public abstract void Overlap(
                 Vector3 _pos,
@@ -178,6 +180,9 @@ namespace com.cozyhome.Archetype
 
             public abstract Vector3 Center();
             public abstract float Height();
+
+            public abstract Vector3 MaximizeConvexBoundary((Quaternion orient, Vector3 pos, Vector3 lc) cs, (Vector3 n, Vector3 x) pln);
+            public abstract Vector3 ClosestPoint(Vector3 p);
         }
 
         [System.Serializable]
@@ -236,14 +241,14 @@ namespace com.cozyhome.Archetype
             }
 
             public static void Overlap(Vector3 _pos,
-                                    Vector3 center,
-                                    float radius,
-                                    Quaternion _orient,
-                                    LayerMask _filter,
-                                    float _inflate,
-                                    QueryTriggerInteraction _interacttype,
-                                    Collider[] _colliders,
-                                    out int _overlapcount)
+                Vector3 center,
+                float radius,
+                Quaternion _orient,
+                LayerMask _filter,
+                float _inflate,
+                QueryTriggerInteraction _interacttype,
+                Collider[] _colliders,
+                out int _overlapcount)
             {
                 _overlapcount = 0;
                 _pos += _orient * center;
@@ -258,16 +263,16 @@ namespace com.cozyhome.Archetype
             }
 
             public static void Trace(Vector3 _pos,
-                                Vector3 center,
-                                Vector3 _direction,
-                                float _radius,
-                                float _len,
-                                Quaternion _orient,
-                                LayerMask _filter,
-                                float _inflate,
-                                QueryTriggerInteraction _interacttype,
-                                RaycastHit[] _hits,
-                                out int _tracecount)
+                Vector3 center,
+                Vector3 _direction,
+                float _radius,
+                float _len,
+                Quaternion _orient,
+                LayerMask _filter,
+                float _inflate,
+                QueryTriggerInteraction _interacttype,
+                RaycastHit[] _hits,
+                out int _tracecount)
             {
                 _tracecount = 0;
                 _pos += _orient * center;
@@ -287,6 +292,12 @@ namespace com.cozyhome.Archetype
 
             public override Vector3 Center() => _collider.center;
             public override float Height() => _collider.radius;
+
+            public override Vector3 MaximizeConvexBoundary((Quaternion orient, Vector3 pos, Vector3 lc) cs, (Vector3 n, Vector3 x) pln)
+                => pln.x + pln.n * _collider.radius;
+
+            public override Vector3 ClosestPoint(Vector3 p) =>
+                _collider.ClosestPoint(p);
         }
 
         [System.Serializable]
@@ -351,15 +362,15 @@ namespace com.cozyhome.Archetype
             public override float Height() => _collider.height;
 
             public static void Overlap(Vector3 _pos,
-                                    Vector3 _center,
-                                    float _radius,
-                                    float _height,
-                                    Quaternion _orient,
-                                    LayerMask _filter,
-                                    float _inflate,
-                                    QueryTriggerInteraction _interacttype,
-                                    Collider[] _colliders,
-                                    out int _overlapcount)
+                Vector3 _center,
+                float _radius,
+                float _height,
+                Quaternion _orient,
+                LayerMask _filter,
+                float _inflate,
+                QueryTriggerInteraction _interacttype,
+                Collider[] _colliders,
+                out int _overlapcount)
             {
                 _overlapcount = 0;
                 _pos += _orient * _center;
@@ -378,17 +389,17 @@ namespace com.cozyhome.Archetype
             }
 
             public static void Trace(Vector3 _pos,
-                                Vector3 _center,
-                                float _height,
-                                float _radius,
-                                Vector3 _direction,
-                                float _len,
-                                Quaternion _orient,
-                                LayerMask _filter,
-                                float _inflate,
-                                QueryTriggerInteraction _interacttype,
-                                RaycastHit[] _hits,
-                                out int _tracecount)
+                Vector3 _center,
+                float _height,
+                float _radius,
+                Vector3 _direction,
+                float _len,
+                Quaternion _orient,
+                LayerMask _filter,
+                float _inflate,
+                QueryTriggerInteraction _interacttype,
+                RaycastHit[] _hits,
+                out int _tracecount)
             {
                 _tracecount = 0;
                 _pos += _orient * _center;
@@ -412,6 +423,24 @@ namespace com.cozyhome.Archetype
             }
 
             public override Vector3 Center() => _collider.center;
+
+            public override Vector3 MaximizeConvexBoundary((Quaternion orient, Vector3 pos, Vector3 lc) cs, (Vector3 n, Vector3 x) pln)
+            {
+                Vector3 _u = cs.orient * new Vector3(0, 1, 0);
+                cs.pos += cs.orient * cs.lc; // account for world-space transform
+                
+                float rh = _collider.height * .5F - _collider.radius;
+                Vector3 _p0 = cs.pos - _u * (rh);
+                Vector3 _p1 = cs.pos + _u * (rh);
+
+                float a = Vector3.Dot(_p0 - pln.x, pln.n);
+                float b = Vector3.Dot(_p1 - pln.x, pln.n);
+
+                return a > b ? _p0 : _p1;
+            }
+
+            public override Vector3 ClosestPoint(Vector3 p) =>
+                _collider.ClosestPoint(p);
         }
 
         [System.Serializable]
@@ -436,7 +465,15 @@ namespace com.cozyhome.Archetype
                 return;
             }
 
-            public override void Trace(Vector3 _pos, Vector3 _direction, float _len, Quaternion _orient, LayerMask _filter, float _inflate, QueryTriggerInteraction _interacttype, RaycastHit[] _hits, out int _tracecount)
+            public override void Trace(Vector3 _pos, 
+                Vector3 _direction, 
+                float _len, 
+                Quaternion _orient, 
+                LayerMask _filter, 
+                float _inflate, 
+                QueryTriggerInteraction _interacttype, 
+                RaycastHit[] _hits, 
+                out int _tracecount)
             {
                 _tracecount = 0;
                 _pos += _orient * _collider.center;
@@ -483,14 +520,14 @@ namespace com.cozyhome.Archetype
 
 
             public static void Overlap(Vector3 _pos,
-            Vector3 _center,
-            Vector3 _size,
-            Quaternion _orient,
-            LayerMask _filter,
-            float _inflate,
-            QueryTriggerInteraction _interacttype,
-            Collider[] _colliders,
-            out int _overlapcount)
+                Vector3 _center,
+                Vector3 _size,
+                Quaternion _orient,
+                LayerMask _filter,
+                float _inflate,
+                QueryTriggerInteraction _interacttype,
+                Collider[] _colliders,
+                out int _overlapcount)
             {
                 _overlapcount = 0;
                 _pos += _orient * _center;
@@ -505,16 +542,16 @@ namespace com.cozyhome.Archetype
             }
 
             public static void Trace(Vector3 _pos,
-                                Vector3 _center,
-                                Vector3 _size,
-                                Vector3 _direction,
-                                float _len,
-                                Quaternion _orient,
-                                LayerMask _filter,
-                                float _inflate,
-                                QueryTriggerInteraction _interacttype,
-                                RaycastHit[] _hits,
-                                out int _tracecount)
+                Vector3 _center,
+                Vector3 _size,
+                Vector3 _direction,
+                float _len,
+                Quaternion _orient,
+                LayerMask _filter,
+                float _inflate,
+                QueryTriggerInteraction _interacttype,
+                RaycastHit[] _hits,
+                out int _tracecount)
             {
                 _tracecount = 0;
                 _pos += _orient * _center;
@@ -538,6 +575,65 @@ namespace com.cozyhome.Archetype
             public override Vector3 Center() => _collider.center;
             
             public override float Height() => _collider.size[1];
+
+            public override Vector3 MaximizeConvexBoundary((Quaternion orient, Vector3 pos, Vector3 lc) cs, (Vector3 n, Vector3 x) pln)
+            {
+                // basically need to reconstruct every point in our box systematically
+                // TIP: im sure an inverse matrix of our plane into coordinates relative to our shape
+                // would greatly improve the running time of our algorithm. Sadly, I am very lazy.
+                cs.pos += cs.orient * cs.lc;
+                
+                float max     = 0F;
+                Vector3 v_max = Vector3.zero;
+
+                for(int i = 0;i < 8;i++)
+                {
+                    Vector3 p = this.GetLocalBoundaryPoint(i);
+                    // transform point to world space
+                    p = cs.orient * p; // transform p itself to world space
+                    p = p + cs.pos; // add the local space offset
+                    float d = VectorHeader.Dot(p - pln.x, pln.n); 
+
+                    if(d > max)
+                    {
+                        max = d;
+                        v_max = p;
+                    }
+                }
+
+                return v_max;
+            }
+
+            public override Vector3 ClosestPoint(Vector3 p) =>
+                _collider.ClosestPoint(p);
+
+            // really bad but necessary to prevent having to store an array of vector3s for every single box
+            public Vector3 GetLocalBoundaryPoint(int i) 
+            {
+                float l,w,h; l = _collider.size[0] / 2F; w = _collider.size[1] / 2F; h = _collider.size[2] / 2F;
+                
+                switch(i)
+                {
+                    case 0:
+                        return new Vector3(-l, -w, -h);
+                    case 1:
+                        return new Vector3(-l, +w, -h);
+                    case 2:
+                        return new Vector3(+l, -w, -h);
+                    case 3:
+                        return new Vector3(+l, +w, -h);
+                    case 4:
+                        return new Vector3(-l, -w, +h);    
+                    case 5:
+                        return new Vector3(-l, +w, +h);    
+                    case 6:
+                        return new Vector3(+l, -w, +h);    
+                    case 7:
+                        return new Vector3(+l, +w, +h);    
+                }
+
+                return Vector3.zero;
+            }
         }
     }
 }

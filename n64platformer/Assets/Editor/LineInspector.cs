@@ -18,12 +18,20 @@ public class LineInspector : Editor
         EditorGUI.BeginChangeCheck();
 		p0 = Handles.DoPositionHandle(p0, handleRotation);
 		if (EditorGUI.EndChangeCheck()) {
+            
+            Undo.RecordObject(line, "Move Point");
+            EditorUtility.SetDirty(line);
+
 			line.p0 = handleTransform.InverseTransformPoint(p0);
 		}
 		EditorGUI.BeginChangeCheck();
 		p1 = Handles.DoPositionHandle(p1, handleRotation);
 		if (EditorGUI.EndChangeCheck()) {
-			line.p1 = handleTransform.InverseTransformPoint(p1);
+			
+            Undo.RecordObject(line, "Move Point");
+            EditorUtility.SetDirty(line);
+            
+            line.p1 = handleTransform.InverseTransformPoint(p1);
 		}
 
         Handles.color = Color.white;

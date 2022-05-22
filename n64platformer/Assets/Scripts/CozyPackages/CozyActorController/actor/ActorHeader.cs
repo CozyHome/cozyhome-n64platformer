@@ -33,10 +33,14 @@ namespace com.cozyhome.Actors
         public enum SlideSnapType { Never = 0, Toggled = 1, Always = 2 };
         public enum MoveType
         {
-            Fly = 0, /* PM_FlyMove() */
-            Slide = 1, /* PM_SlideMove() */
+            Fly       = 0, /* PM_FlyMove() */
+            Slide     = 1, /* PM_SlideMove() */
             SlideStep = 2, /*PM_SlideStepMove() */
-            Noclip = 3 /* PM_NoclipMove() */
+            Noclip    = 3 /* PM_NoclipMove() */
+        };
+        public enum GroundTraceType {
+            Default  = 0,
+            Assigned = 1
         };
 
         // A shameless data class that I use to store grounding information. I'm not fucking bothering
@@ -49,6 +53,7 @@ namespace com.cozyhome.Actors
             public Vector3 actorpoint; // our actor's position at the time of our hit
             public Vector3 point; // our trace point
             public Vector3 normal; // our trace normal
+            public Collider collider;
             public float distance; // our trace distance
             public bool stable; // is our trace stable?
             public bool snapped; // is our trace snapping?
@@ -61,6 +66,7 @@ namespace com.cozyhome.Actors
                 distance = 0.0F;
                 stable = false;
                 snapped = false;
+                collider = null;
             }
         }
 
@@ -76,6 +82,9 @@ namespace com.cozyhome.Actors
             [Tooltip("The snap type the actor will abide by when determining its ground state. \nNever = The actor will never snap to the ground. \nToggled = The actor will only snap to the ground if its snapenabled boolean is set to true. \nAlways = The actor will always snap to the ground.")]
             [Header("Snap Type Properties")]
             [SerializeField] private SlideSnapType SnapType = SlideSnapType.Always;
+            [Tooltip("The snap type the actor will abide by when determining its ground state. \nNever = The actor will never snap to the ground. \nToggled = The actor will only snap to the ground if its snapenabled boolean is set to true. \nAlways = The actor will always snap to the ground.")]
+            [Header("Snap Type Properties")]
+            [SerializeField] private GroundTraceType GroundTraceType = GroundTraceType.Default;
             [Tooltip("Whether or not the actor will snap to the ground if its snap type is set to SlideSnapType.Toggled enum.")]
             [SerializeField] private bool SnapEnabled = true;
             [Header("Stepping Properties")]
@@ -114,12 +123,14 @@ namespace com.cozyhome.Actors
             [System.NonSerialized] public Vector3 position;
             [System.NonSerialized] public Vector3 velocity;
             [System.NonSerialized] public Quaternion orientation;
+            [System.NonSerialized] public Vector3 groundtracedir;
 
             public RaycastHit[] Hits => _internalhits;
             public Collider[] Colliders => _internalcolliders;
             public bool IsSnapEnabled => SnapEnabled;
             public MoveType GetMoveType => MoveType;
             public SlideSnapType GetSnapType => SnapType;
+            public GroundTraceType GetGroundTraceType => GroundTraceType;
             public bool GetSnapEnabled => SnapEnabled;
             public bool GetStepEnabled => StepEnabled;
             public float GetStepHeight => StepHeight;
@@ -136,8 +147,10 @@ namespace com.cozyhome.Actors
 
             public void SetVelocity(Vector3 velocity) => this.velocity = velocity;
             public void SetPosition(Vector3 position) => this.position = position;
+            public void SetGroundTraceDir(Vector3 groundtracedir) => this.groundtracedir = groundtracedir;
             public void SetOrientation(Quaternion orientation) => this.orientation = orientation;
             public void SetMoveType(MoveType movetype) => this.MoveType = movetype;
+            public void SetGroundTraceType(GroundTraceType gtracetype) => this.GroundTraceType = gtracetype;
             public void SetSnapType(SlideSnapType snaptype) => this.SnapType = snaptype;
             public void SetSnapEnabled(bool snapenabled) => this.SnapEnabled = snapenabled;
             public void SetStepEnabled(bool stepenabled) => this.StepEnabled = stepenabled;
@@ -423,6 +436,7 @@ namespace com.cozyhome.Actors
             ArchetypeHeader.Archetype archetype = actor.GetArchetype();
             Collider self = archetype.Collider();
             SlideSnapType snaptype = actor.GetSnapType;
+            GroundTraceType gtracetype = actor.GetGroundTraceType;
             Collider[] colliderbuffer = actor.Colliders;
             LayerMask layermask = actor.Mask;
 
@@ -430,7 +444,7 @@ namespace com.cozyhome.Actors
 
             /* ground trace values */
             Vector3 gposition = position;
-            Vector3 groundtracedir = orientation * new Vector3(0, -1, 0);
+            Vector3 groundtracedir = gtracetype == GroundTraceType.Default ? orientation * new Vector3(0, -1, 0) : actor.groundtracedir;
 
             /* trace values */
             Vector3 lastplane = Vector3.zero;
@@ -455,6 +469,7 @@ namespace com.cozyhome.Actors
             lastground.stable = ground.stable;
             lastground.snapped = ground.snapped;
             lastground.distance = ground.distance;
+            lastground.collider = ground.collider;
 
             ground.Clear();
 
@@ -520,6 +535,7 @@ namespace com.cozyhome.Actors
                     ground.actorpoint = gposition;
                     ground.stable = actor.DetermineGroundStability(velocity, _closest, layermask);
                     ground.snapped = false;
+                    ground.collider = _closest.collider;
 
                     gposition += groundtracedir * (_closest.distance);
                     /*
@@ -700,7 +716,7 @@ namespace com.cozyhome.Actors
                             out Vector3 _normal,
                             out float _distance))
                         {
-                            position += _normal * (_distance + MIN_PUSHBACK_DEPTH);
+                            position += _normal * (_distance + skin);
 
                             PM_SlideDetermineImmediateGeometry(ref velocity,
                                 ref lastplane,
@@ -709,7 +725,8 @@ namespace com.cozyhome.Actors
                                 ground.normal,
                                 ground.stable && ground.snapped,
                                 updir,
-                                ref geometryclips);
+                                ref geometryclips
+                            );
                             break;
                         }
                     }
@@ -757,7 +774,7 @@ namespace com.cozyhome.Actors
                         RaycastHit _closest = tracebuffer[_i0];
                         Vector3 _normal = _closest.normal;
 
-                        float _rto = _closest.distance / _tracelen;
+                        float _rto = _closest.distance / (_tracelen + skin);
                         timefactor -= _rto;
 
                         float _dis = _closest.distance - skin;
@@ -816,15 +833,16 @@ namespace com.cozyhome.Actors
                         VectorHeader.ProjectVector(ref velocity, _c2);
                         geometryclips |= (1 << 1);
                     }
-                    else
+                    else {
                         PM_SlideClipVelocity(ref velocity, stability, plane, groundstability, groundplane, up);
+                    }
                     break;
                 case (1 << 0) | (1 << 1): // multiple creases detected
                     velocity = Vector3.zero;
                     geometryclips |= (1 << 2);
                     break;
             }
-
+            
             lastplane = plane;
         }
 
@@ -912,20 +930,21 @@ namespace com.cozyhome.Actors
             ArchetypeHeader.Archetype archetype = actor.GetArchetype();
             Collider self = archetype.Collider();
             SlideSnapType snaptype = actor.GetSnapType;
+            GroundTraceType gtracetype = actor.GetGroundTraceType;
             Collider[] overlapbuffer = actor.Colliders;
             LayerMask layermask = actor.Mask;
 
             RaycastHit[] tracebuffer = actor.Hits;
 
             /* ground trace values */
-            Vector3 gposition = position;
-            Vector3 groundtracedir = orientation * new Vector3(0, -1, 0);
+            Vector3 gposition = position;            
+            Vector3 groundtracedir = gtracetype == GroundTraceType.Default ? orientation * new Vector3(0, -1, 0) : actor.groundtracedir;
 
             /* trace values */
             Vector3 lastplane = Vector3.zero;
             Vector3 updir = orientation * new Vector3(0, 1, 0);
 
-            float timefactor = 1F;
+            float timefactor = velocity.magnitude;
             float skin = ArchetypeHeader.GET_SKINEPSILON(archetype.PrimitiveType());
             float bias = ArchetypeHeader.GET_TRACEBIAS(archetype.PrimitiveType());
             int numbumps = 0;
@@ -949,6 +968,7 @@ namespace com.cozyhome.Actors
             lastground.stable = ground.stable;
             lastground.snapped = ground.snapped;
             lastground.distance = ground.distance;
+            lastground.collider = ground.collider;
 
             ground.Clear();
 
@@ -960,7 +980,10 @@ namespace com.cozyhome.Actors
             // if we're grounded, we'd like to stay that way! If we're not grounded, search a smaller distance to prevent
             // getting snapped to the floor in a visibly noticeable way by the camera. If you're interpolating player movement then
             // this may not be visible.
-            float gtracelen = (lastground.stable && lastground.snapped) ? MAX_GROUNDQUERY : MIN_GROUNDQUERY;
+            float gtracelen = MIN_GROUNDQUERY;// (lastground.stable/* && lastground.snapped*/) ? MAX_GROUNDQUERY : MIN_GROUNDQUERY;
+
+            if(lastground.snapped && lastground.stable)
+                gtracelen = MAX_GROUNDQUERY > stepheight ? MAX_GROUNDQUERY : stepheight; // downward stepping
 
             while (numgroundbumps++ < MAX_GROUNDBUMPS &&
                 gtracelen > 0F)
@@ -992,7 +1015,7 @@ namespace com.cozyhome.Actors
                     gtracelen + 2F * skin,
                     orientation,
                     layermask,
-                    /* inflate */ 0F,
+                    /* inflate */ 0F, //0F,
                     QueryTriggerInteraction.Ignore,
                     tracebuffer,
                     out int numgroundtraces);
@@ -1016,6 +1039,7 @@ namespace com.cozyhome.Actors
                     ground.actorpoint = gposition;
                     ground.stable = actor.DetermineGroundStability(velocity, _closest, layermask);
                     ground.snapped = false;
+                    ground.collider = _closest.collider;
 
                     /*
                      warp regardless of stablility. We'll only be setting our trace position
@@ -1152,7 +1176,12 @@ namespace com.cozyhome.Actors
 
                         VectorHeader.ClipVector(ref groundtracedir, _closest.normal);
                         groundtracedir.Normalize();
+                        
                         gtracelen -= _closest.distance;
+
+                        gtracelen = Mathf.Min(Mathf.Max(gtracelen, 0.0F), 0.01F ); // prevents sliding across asymptotically level slopes
+                        // usually the first iteration will deal with most scenarios involving somewhat perpendicular slopes. I now fully
+                        // understand why the KCC did this initially. -DC @ January 1st, 2021
                     }
                 }
                 else /* nothing discovered, end out of our ground loop */
@@ -1201,7 +1230,6 @@ namespace com.cozyhome.Actors
                             out float _distance))
                         {
                             position += _normal * (_distance + MIN_PUSHBACK_DEPTH);
-
                             PM_SlideDetermineImmediateGeometry(ref velocity,
                                 ref lastplane,
                                 actor.DeterminePlaneStability(_normal, otherc),
@@ -1224,12 +1252,14 @@ namespace com.cozyhome.Actors
                 float _tracelen = _trace.magnitude;
 
                 // IF unable to trace any further, break and end
-                if (_tracelen <= MIN_DISPLACEMENT)
+                if (_tracelen <= skin)
                     timefactor = 0;
                 else
                 {
+                    Vector3 trace_dir = _trace / _tracelen;
+
                     archetype.Trace(position,
-                        _trace / _tracelen,
+                        trace_dir,
                         _tracelen + skin,
                         orientation,
                         layermask,
@@ -1245,9 +1275,13 @@ namespace com.cozyhome.Actors
                         out int _i0,
                         bias,
                         self,
-                        tracebuffer);
+                        tracebuffer
+                    );
 
-                    if (_i0 <= -1) // nothing discovered :::
+                    // bad coder
+
+                    bool success = _i0 >= 0;
+                    if (!success) // nothing discovered :::
                     {
                         timefactor = 0; // end move
                         position += _trace;
@@ -1258,12 +1292,14 @@ namespace com.cozyhome.Actors
                         RaycastHit _closest = tracebuffer[_i0]; /* struct buffer so no need to worry about overriding data */
                         Vector3 normal = _closest.normal;
                         Vector3 tracepoint = _closest.point;
-                        float _rto = _closest.distance / _tracelen;
-                        timefactor -= _rto;
+                        float _dis = _closest.distance;
+                        // float _rto = _closest.distance;
+                        // timefactor -= _rto;
 
-                        float _dis = _closest.distance - skin;
-                        position += (_trace / _tracelen) * _dis; // move back along the trace line!
+                        Vector3 change = trace_dir * _dis + normal * skin;
+                        position += change;
 
+                        timefactor -= change.magnitude;
                         /* 
                          *  only step if the following is true:
                          *  1. we are grounded
@@ -1287,7 +1323,7 @@ namespace com.cozyhome.Actors
 
                         if (!canstep)
                         {
-                            receiver.OnTraceHit(TraceHitType.Step, _closest, position, velocity);
+                            receiver.OnTraceHit(TraceHitType.Trace, _closest, position, velocity);
 
                             PM_SlideDetermineImmediateGeometry(ref velocity,
                                         ref lastplane,
@@ -1323,81 +1359,8 @@ namespace com.cozyhome.Actors
             float max_step,
             out Vector3 step_position)
         {
-            const float max_correspondance = 0.1F, min_step = 0.01F, aux_up = 0.05F;
-            Vector3 aux_feet = position;
-            Vector3 prim_up = orientation * new Vector3(0, 1, 0);
-
-            aux_feet += orientation * archetype.Center(); /* account for local offset */
-            aux_feet -= prim_up * archetype.Height() / 2F; /* account for character's height, to reach feet */
-
-            aux_feet += normal * (VectorHeader.Dot(tracepoint - position, normal) - INWARD_STEP_DISTANCE); /* push into obstruction plane to minimize incorrect line trace */
-
             step_position = position;
-
-            /* simple angular check first. if its not planar to our primitive, its not a step. */
-            if (Mathf.Abs(VectorHeader.Dot(normal, prim_up)) >= max_correspondance)
-                return false;
-
-            /* then we'll linecast from our character's feet to a given step height, to determine how tall the step is */
-
-            int linecast = ArchetypeHeader.TraceRay(
-                _position: aux_feet + prim_up * max_step,
-                _direction: -prim_up,
-                _mag: (max_step + aux_up),
-                tracebuffer,
-                layermask);
-
-            ArchetypeHeader.TraceFilters.FindClosestFilterInvalids(
-                _tracesfound: ref linecast,
-                _closestindex: out int i0,
-                _bias: ArchetypeHeader.GET_TRACEBIAS(ArchetypeHeader.ARCHETYPE_LINE),
-                _self: archetype.Collider(),
-                tracebuffer
-            );
-
-            if (i0 <= -1) /* if no planes were traced we haven't found any floor plane to step onto, it was a false positive */
-                return false;
-
-            /* once again, we want to make sure our newly traced plane is a proper step by measuring the angular correspondance
-                of our upward vector along our traced plane. */
-            if (VectorHeader.Dot(tracebuffer[i0].normal, prim_up) < 1F - max_correspondance)
-                return false;
-
-            /* advance our step position */
-            float step_height = max_step - tracebuffer[i0].distance;
-
-            /* if our step is too small, don't bother stepping upward as it may result in undefined behaviour */
-            if (step_height < min_step)
-                return false;
-
-            step_position += prim_up * (step_height + aux_up);
-            step_position -= normal * (INWARD_STEP_DISTANCE);
-
-            /* overlap at step position, and return true if we aren't overlapping with anything */
-
-            /* 
-                NOTE: If you'd like, you can override this stepping check here and write in a better one. I understand
-                that using a trace downward onto the surface will allow you to determine if a step is safe with varying angles. However,
-                I wanted to keep this operation relatively light (an overlap is already a lot) so feel free to try writing
-                that out yourself, it's a pretty cool set of instructions
-            */
-
-            archetype.Overlap(
-                _pos: step_position,
-                _orient: orientation,
-                _filter: layermask,
-                _inflate: 0F,
-                QueryTriggerInteraction.Ignore,
-                overlapbuffer,
-                out int overlapcount);
-
-            ArchetypeHeader.OverlapFilters.FilterSelf(
-                _overlapsfound: ref overlapcount,
-                archetype.Collider(),
-                overlapbuffer
-            );
-
-            return !(overlapcount > 0);
+            return false;
         }
 
         /* 
@@ -1476,13 +1439,13 @@ namespace com.cozyhome.Actors
             void OnTriggerHit(TriggerHitType triggertype, Collider trigger);
         }
 
-        public const float MIN_GROUNDQUERY = 0.1F; // distance queried in our ground traces if we weren't grounded the previous simulated step
-        public const float MAX_GROUNDQUERY = 0.3F; // distnace queried in our ground traces if we were grounded in the previous simulation step
+        public const float MIN_GROUNDQUERY = .1F; // distance queried in our ground traces if we weren't grounded the previous simulated step
+        public const float MAX_GROUNDQUERY = .5F; // distnace queried in our ground traces if we were grounded in the previous simulation step
 
         public const int MAX_GROUNDBUMPS = 2; // # of ground snaps/iterations in a SlideMove() 
         public const int MAX_PUSHBACKS = 8; // # of iterations in our Pushback() funcs
         public const int MAX_BUMPS = 6; // # of iterations in our Move() funcs
-        public const int MAX_HITS = 6; // # of RaycastHit[] structs allocated to
+        public const int MAX_HITS = 12; // # of RaycastHit[] structs allocated to
                                        // a hit buffer.
         public const int MAX_OVERLAPS = 8; // # of Collider classes allocated to a
                                            // overlap buffer.
@@ -1490,6 +1453,6 @@ namespace com.cozyhome.Actors
         public const float FLY_CREASE_EPSILON = 1F; // minimum distance angle during a crease check to disregard any normals being queried.
         public const float INWARD_STEP_DISTANCE = 0.01F; // minimum displacement into a stepping plane
         public const float MIN_HOVER_DISTANCE = 0.025F;
-        public const float MIN_PUSHBACK_DEPTH = 0.00005F;
+        public const float MIN_PUSHBACK_DEPTH = 0.005F;
     }
 }

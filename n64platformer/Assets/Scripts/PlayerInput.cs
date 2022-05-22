@@ -79,7 +79,7 @@ public class PlayerInput : MonoBehaviour
     // delegate ConsoleHeader.Command
     void Func_MouseMode(string[] modifiers, out string output)
     {
-        if (modifiers.Length >= 1 && string.IsNullOrEmpty(modifiers[0]))
+        if (modifiers != null && string.IsNullOrEmpty(modifiers[0]))
         {
             output = "error: invalid input on mouse state";
             switch (modifiers[0])

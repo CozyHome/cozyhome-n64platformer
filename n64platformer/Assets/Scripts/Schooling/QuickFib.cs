@@ -17,9 +17,25 @@ public class QuickFib : MonoBehaviour
                 _ = !string.IsNullOrEmpty(modifiers[0]) ? int.TryParse(modifiers[0], out result) : false;
 
                 if(result != 0)
-                    MonoConsole.PrintToScreen($"computing fib({result}) = {quickfib(result)}");
+                    MonoConsole.PrintToScreen($"computing fib({result}) = {fibLin(result)}");
                 else
                     MonoConsole.PrintToScreen("error: no valid int provided for fib!");
+            }
+        );
+
+        MonoConsole.InsertCommand(
+            "gfib",
+            (string[] modifiers, out string output) => 
+            {
+                output = "==================";
+                
+                int result = -1;
+                _ = !string.IsNullOrEmpty(modifiers[0]) ? int.TryParse(modifiers[0], out result) : false;
+
+                if(result != -1)
+                    MonoConsole.PrintToScreen($"computing gfib({result}) = {gfib(12, 34, result)}");
+                else
+                    MonoConsole.PrintToScreen("error: no valid int provided for gfib!");
             }
         );
 
@@ -29,10 +45,10 @@ public class QuickFib : MonoBehaviour
             {
                 output = "==================";
                 
-                int result = 0;
+                int result = -1;
                 _ = !string.IsNullOrEmpty(modifiers[0]) ? int.TryParse(modifiers[0], out result) : false;
 
-                if(result != 0)
+                if(result != -1)
                     MonoConsole.PrintToScreen($"computing linfib({result}) = {linfib(result)}");
                 else
                     MonoConsole.PrintToScreen("error: no valid int provided for fib!");
@@ -66,9 +82,33 @@ public class QuickFib : MonoBehaviour
 
     int linfib(int n) 
     {
+        if(n == 0)
+            return 0;
+        if(n == 1)
+            return 1;
+
         (int a, int b) tuple = (1,1);
 
         for(int i = 2;i < n;i++)
+        {
+            int _next = tuple.a + tuple.b;
+            tuple.b = tuple.a;
+            tuple.a = _next;
+        }
+
+        return tuple.a;
+    }
+
+    int glinfib(int g0, int g1, int n) 
+    {
+        if(n == 0)
+            return g0;
+        if(n == 1)
+            return g1;
+
+        (int a, int b) tuple = (g0, g1);
+
+        for(int i = 1;i < n;i++)
         {
             int _next = tuple.a + tuple.b;
             tuple.b = tuple.a;
@@ -106,6 +146,64 @@ public class QuickFib : MonoBehaviour
                     b: (res1.b * res2.a) + (d * res2.b)
                 );
             }
+        }
+    }
+
+    
+    int gfib(int a, int b, int n)
+    {
+        int g0 = a;
+        int g1 = b;
+
+        if(n == 0)
+            return g0;
+        if(n == 1)
+            return g1;
+
+        // formula : g(n) = f(n+1)(b) + f(n)(a)
+        int gB = linfib(n) * b;
+        int gA = linfib(n - 1) * a;
+
+        // the way it is defined
+        (int current, int previous) tuple = (g1, g0);
+
+        if(n == 0)
+            tuple.current = g0;
+        if(n == 1)
+            tuple.current = g1;
+
+        for(int i = 2;i <= n;i++)
+        {
+            int oldcur     = tuple.current;
+            tuple.current  = tuple.current + tuple.previous;
+            tuple.previous = oldcur;
+        }
+
+        MonoConsole.PrintToScreen($"other procedure produced: {tuple.current}");
+
+        int g = gA + gB;
+
+        return g;
+    }
+
+    
+    int fibLin(int n)
+    {
+        return fibPair(n - 1)[1];        
+    }
+
+    int[] fibPair(int n)
+    {
+        if(n == 1)
+            return new int[] { 1, 1 };
+        else
+        {
+            int[] pair = fibPair(n - 1);
+            int old = pair[1]; // fn- 1
+            pair[1] = pair[0] + pair[1];
+            pair[0] = old;
+
+            return pair;
         }
     }
 }

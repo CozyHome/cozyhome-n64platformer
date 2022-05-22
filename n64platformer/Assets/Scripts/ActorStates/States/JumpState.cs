@@ -97,6 +97,7 @@ public class JumpState : ActorState
             LedgeRegistry,
             Machine))
             return;
+
         else if (SquareTrigger)
         {
             if (Machine.GetFSM.TrySwitchState((ActorState next) =>

@@ -95,8 +95,10 @@ namespace com.cozyhome.Actors
 
             if (_eflags != ((1 << 0) | (1 << 1))) // ledge detected & velocity exiting normal dir
             {
-                if (_ed > 0F)
+                if (_ed > 0F) {
+                    // Debug.Break();
                     return false;
+                }
                 else
                 {
                     VectorHeader.ClipVector(ref velocity, _u);

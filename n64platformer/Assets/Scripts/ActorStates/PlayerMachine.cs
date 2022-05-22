@@ -69,11 +69,22 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
         Animator.Update(Time.fixedDeltaTime);
     }
 
-    public void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask)
-    => FSM.Current.OnGroundHit(ground, lastground, layermask);
+    public void OnGroundHit(ActorHeader.GroundHit ground, ActorHeader.GroundHit lastground, LayerMask layermask) {
+        FSM.Current.OnGroundHit(ground, lastground, layermask);
+        Debug.DrawRay(ground.point, ground.normal * 1000F, Color.green);
 
-    public void OnTraceHit(ActorHeader.TraceHitType tracetype, RaycastHit trace, Vector3 position, Vector3 velocity)
-    => FSM.Current.OnTraceHit(tracetype, trace, position, velocity);
+        if(Input.GetKey(KeyCode.Q))
+            Debug.Break();        
+    }
+
+    public void OnTraceHit(ActorHeader.TraceHitType tracetype, RaycastHit trace, Vector3 position, Vector3 velocity){ 
+        FSM.Current.OnTraceHit(tracetype, trace, position, velocity);
+        // Debug.Log(tracetype + " " + trace.normal + " " + trace.point + " " + GetActor.DeterminePlaneStability(trace.normal, trace.collider));
+        Debug.DrawRay(trace.point, trace.normal * 1000F, Color.magenta);
+
+        if(Input.GetKey(KeyCode.Q))
+            Debug.Break();
+    }
 
     public void OnTriggerHit(ActorHeader.TriggerHitType triggertype, Collider trigger)
         => FSM.Current.OnTriggerHit(triggertype, trigger);
@@ -97,9 +108,10 @@ public class PlayerMachine : MonoBehaviour, ActorHeader.IActorReceiver
 
         if (modifiers.Length >= 1)
         {
+            string nextkey = modifiers[0];
             if (string.IsNullOrEmpty(modifiers[0]))
                 return;
-            else if (FSM.TrySwitchState((ActorState state) => state != null, modifiers[0]))
+            else if (FSM.TrySwitchState((ActorState state) => state != null, nextkey))
                     output = "actor state successfully switched to " + modifiers[0];
 
             return;
